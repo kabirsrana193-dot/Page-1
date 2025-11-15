@@ -207,7 +207,7 @@ STOCK_CODE_MAP = {
     "Manappuram Finance": "MANAPPURAM",
     "PNB Housing": "PNBHOUSING",
     "Can Fin Homes": "CANFINHOME",
-    "Aarti Industries": "AARTIIND",
+    "Aarti Industries": "AARIND",
     "Deepak Nitrite": "DEEPAKNTR",
     "Navin Fluorine": "NAVINFLUOR",
     "PI Industries": "PIIND",

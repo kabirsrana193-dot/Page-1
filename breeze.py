@@ -172,24 +172,31 @@ if not st.session_state.breeze_connected:
 # Stock Data Functions using Breeze
 # --------------------------
 @st.cache_data(ttl=300)
-def fetch_stock_data_breeze(stock_code, days=90):
-    """Fetch historical stock data using Breeze API"""
+def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
+    """Fetch historical stock data using Breeze API
+    
+    Supported intervals: 1minute, 5minute, 30minute, 1day
+    """
     try:
         breeze = st.session_state.breeze_client
         if not breeze:
             return pd.DataFrame()
         
+        # Subscribe to stock first
+        subscribe_to_stock(breeze, stock_code)
+        time.sleep(0.2)  # Small delay after subscription
+        
         # Calculate dates
         to_date = datetime.now()
         from_date = to_date - timedelta(days=days)
         
-        # Format dates for Breeze API (ISO8601)
-        from_date_str = from_date.strftime("%Y-%m-%dT00:00:00.000Z")
-        to_date_str = to_date.strftime("%Y-%m-%dT23:59:59.000Z")
+        # Format dates for Breeze API (YYYY-MM-DD HH:MM:SS format)
+        from_date_str = from_date.strftime("%Y-%m-%d") + " 07:00:00"
+        to_date_str = to_date.strftime("%Y-%m-%d") + " 23:59:59"
         
         # Fetch historical data
-        response = breeze.get_historical_data_v2(
-            interval="1day",
+        response = breeze.get_historical_data(
+            interval=interval,
             from_date=from_date_str,
             to_date=to_date_str,
             stock_code=stock_code,
@@ -199,20 +206,33 @@ def fetch_stock_data_breeze(stock_code, days=90):
         
         if response and 'Success' in response:
             data = response['Success']
-            if data:
+            if data and len(data) > 0:
                 df = pd.DataFrame(data)
-                # Rename columns to match expected format
-                df = df.rename(columns={
+                
+                # Check column names and rename appropriately
+                column_mapping = {
                     'datetime': 'Date',
+                    'stock_date_time': 'Date',
                     'open': 'Open',
                     'high': 'High',
                     'low': 'Low',
                     'close': 'Close',
-                    'volume': 'Volume'
-                })
-                df['Date'] = pd.to_datetime(df['Date'])
-                df = df.set_index('Date')
-                return df[['Open', 'High', 'Low', 'Close', 'Volume']]
+                    'volume': 'Volume',
+                    'ltp': 'Close'  # Sometimes close is called ltp
+                }
+                
+                df = df.rename(columns=column_mapping)
+                
+                if 'Date' in df.columns:
+                    df['Date'] = pd.to_datetime(df['Date'])
+                    df = df.set_index('Date')
+                    
+                    # Ensure we have the required columns
+                    required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+                    available_cols = [col for col in required_cols if col in df.columns]
+                    
+                    if 'Close' in available_cols:
+                        return df[available_cols]
         
         return pd.DataFrame()
     except Exception as e:
@@ -226,6 +246,10 @@ def get_live_quote(stock_code):
         breeze = st.session_state.breeze_client
         if not breeze:
             return None
+        
+        # Subscribe to stock first
+        subscribe_to_stock(breeze, stock_code)
+        time.sleep(0.2)
         
         response = breeze.get_quotes(
             stock_code=stock_code,
@@ -264,7 +288,7 @@ def calculate_macd(data, fast=12, slow=26, signal=9):
 def generate_signal(stock_code):
     """Generate buy/sell signal"""
     try:
-        df = fetch_stock_data_breeze(stock_code, 90)
+        df = fetch_stock_data_breeze(stock_code, 90, "1day")
         
         if df.empty or len(df) < 50:
             return None
@@ -587,14 +611,31 @@ with tab3:
             )
         
         with col2:
-            period_options = {"1 Month": 30, "3 Months": 90, "6 Months": 180}
-            period_label = st.selectbox("📅 Period", options=list(period_options.keys()), index=1)
+            period_options = {"1 Day": 1, "5 Days": 5, "1 Month": 30, "3 Months": 90}
+            period_label = st.selectbox("📅 Period", options=list(period_options.keys()), index=3)
             period_days = period_options[period_label]
+        
+        # Interval selection (only for intraday)
+        col3, col4 = st.columns(2)
+        with col3:
+            interval_options = {
+                "Daily": "1day",
+                "30 Minutes": "30minute", 
+                "5 Minutes": "5minute",
+                "1 Minute": "1minute"
+            }
+            interval_label = st.selectbox("⏱️ Interval", options=list(interval_options.keys()), index=0)
+            interval = interval_options[interval_label]
+        
+        # Adjust period based on interval
+        if interval != "1day" and period_days > 5:
+            st.info("ℹ️ Intraday data limited to 5 days. Adjusting period...")
+            period_days = 5
         
         stock_code = STOCK_CODE_MAP.get(selected_chart_stock)
         
         if stock_code:
-            df = fetch_stock_data_breeze(stock_code, period_days)
+            df = fetch_stock_data_breeze(stock_code, period_days, interval)
             
             if not df.empty:
                 # Calculate indicators
@@ -696,7 +737,7 @@ with tab4:
                         stock_code = STOCK_CODE_MAP.get(stock_name)
                         
                         with col:
-                            df = fetch_stock_data_breeze(stock_code, days)
+                            df = fetch_stock_data_breeze(stock_code, days, "1day")
                             
                             if not df.empty:
                                 current = df['Close'].iloc[-1]

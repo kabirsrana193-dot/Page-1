@@ -117,35 +117,7 @@ breeze.generate_session(api_secret=secret_key,
 
         
         # Check if session generation was successful
-        if session_response and 'Success' in session_response:
-            return breeze, True, None
-        else:
-            error_msg = session_response.get('Error', 'Unknown error') if session_response else 'No response'
-            return None, False, f"Session generation failed: {error_msg}"
-            
-    except Exception as e:
-        error_msg = str(e)
-        if "Invalid Session" in error_msg:
-            return None, False, "❌ Invalid session token. Please generate a new session token from ICICI Direct."
-        elif "Invalid API Key" in error_msg:
-            return None, False, "❌ Invalid API key. Please check your app_key."
-        else:
-            return None, False, f"❌ Connection failed: {error_msg}"
-
-def subscribe_to_stock(breeze, stock_code):
-    """Subscribe to a stock for live data with error handling"""
-    try:
-        # Check if already subscribed
-        if stock_code in st.session_state.subscribed_stocks:
-            return True
-            
-        response = breeze.subscribe_feeds(
-            exchange_code="NSE",
-            stock_code=stock_code,
-            product_type="cash",
-            get_market_depth=False,
-            get_exchange_quotes=True
-        )
+       
         
         if response and 'Success' in response:
             st.session_state.subscribed_stocks.add(stock_code)

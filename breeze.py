@@ -748,10 +748,7 @@ if st.session_state.breeze_connected:
     st.caption("🔌 **Connection Status:** ✅ Connected to Breeze API")
 else:
     st.caption("🔌 **Connection Status:** ❌ Disconnected - Update credentials to connect") 
-                    
-                      
-                    
-                    status_text.text(f"Analyzing {stock_name}... ({idx+1}/{num_stocks})")
+    status_text.text(f"Analyzing {stock_name}... ({idx+1}/{num_stocks})")
                     
                     signal_data = generate_signal(stock_code)
                     if signal_data:

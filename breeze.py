@@ -748,8 +748,8 @@ if st.session_state.breeze_connected:
     st.caption("🔌 **Connection Status:** ✅ Connected to Breeze API")
 else:
     st.caption("🔌 **Connection Status:** ❌ Disconnected - Update credentials to connect") 
-                    if not stock_code:
-                        continue
+                    
+                      
                     
                     status_text.text(f"Analyzing {stock_name}... ({idx+1}/{num_stocks})")
                     

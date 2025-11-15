@@ -9,7 +9,7 @@ from breeze_connect import BreezeConnect
 
 # Page config
 st.set_page_config(
-    page_title="F&O Dashboard - Breeze",
+    page_title="F&O Dashboard - Breeze (Nifty 200)",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -18,52 +18,237 @@ st.set_page_config(
 # --------------------------
 # Breeze Configuration
 # --------------------------
-app_key = "YOUR_APP_KEY"
-secret_key = "YOUR_SECRET_KEY"
-session_token = "YOUR_SESSION_TOKEN"
+app_key = "68`47N89970w1dH7u1s5347j8403f287"
+secret_key = "5v9k141093cf4361528$z24Q7(Yv2839"
+session_token = "53705299"
 
 # --------------------------
-# Top F&O Stocks with Correct Breeze 6-Digit Codes
+# Nifty 200 Stocks
 # --------------------------
 FNO_STOCKS = [
-    "Reliance", "TCS", "HDFC Bank", "Infosys", "ICICI Bank", 
-    "ITC", "Wipro", "Tata Motors", "Bajaj Finance", "Axis Bank",
-    "Bharti Airtel", "Hindustan Unilever", "Kotak Bank", "L&T",
-    "Asian Paints", "Maruti Suzuki", "Titan", "Sun Pharma",
-    "HCL Tech", "Adani Enterprises", "NTPC", "Tata Steel",
-    "Hindalco", "IndusInd Bank", "M&M", "Coal India"
+    "Reliance Industries", "TCS", "HDFC Bank", "Infosys", "ICICI Bank",
+    "Bharti Airtel", "ITC", "State Bank of India", "HCL Technologies", "Axis Bank",
+    "Kotak Mahindra Bank", "Larsen & Toubro", "Bajaj Finance", "Asian Paints", "Maruti Suzuki",
+    "Titan Company", "Sun Pharma", "Wipro", "Ultratech Cement", "Tata Motors",
+    "Adani Ports", "Adani Enterprises", "Tech Mahindra", "Power Grid", "NTPC",
+    "Coal India", "Tata Steel", "Bajaj Finserv", "Hero MotoCorp", "IndusInd Bank",
+    "Mahindra & Mahindra", "Grasim Industries", "Hindalco", "JSW Steel", "SBI Life",
+    "ICICI Lombard", "Bajaj Auto", "HDFC Life", "Adani Green", "Shree Cement",
+    "Eicher Motors", "UPL", "Tata Consumer", "Britannia", "Nestle India",
+    "Hindustan Unilever", "Cipla", "Dr Reddy's", "Divi's Labs", "Apollo Hospitals",
+    "IOC", "BPCL", "ONGC", "Gail India", "Pidilite",
+    "Berger Paints", "Havells", "Godrej Consumer", "Dabur", "Marico",
+    "Colgate", "United Spirits", "Varun Beverages", "Zomato", "Paytm",
+    "LIC", "SBI Cards", "Cholamandalam", "Muthoot Finance", "Shriram Finance",
+    "Bosch", "ABB India", "Siemens", "Bharat Electronics", "BHEL",
+    "HAL", "L&T Technology", "Persistent", "Coforge", "Mphasis",
+    "LTIMindtree", "Oracle Financial", "DMart", "Trent", "Jubilant Food",
+    "PVR Inox", "IndiGo", "Indian Hotels", "Oberoi Realty", "DLF",
+    "Godrej Properties", "Prestige Estates", "Phoenix Mills", "Voltas", "Blue Star",
+    "Crompton Greaves", "Polycab", "Dixon Tech", "Amber Enterprises", "Tube Investments",
+    "Motherson Sumi", "Bharat Forge", "Balkrishna Ind", "Apollo Tyres", "MRF",
+    "Ashok Leyland", "TVS Motor", "Escorts Kubota", "Bajaj Holdings", "ICICI Prudential",
+    "Max Financial", "Star Health", "GIC", "New India Assurance", "Bank of Baroda",
+    "PNB", "Canara Bank", "Union Bank", "Indian Bank", "Bank of India",
+    "Central Bank", "IDBI Bank", "AU Small Finance", "Bandhan Bank", "Federal Bank",
+    "IDFC First Bank", "RBL Bank", "Yes Bank", "City Union Bank", "Karur Vysya Bank",
+    "Manappuram Finance", "PNB Housing", "Can Fin Homes", "Aarti Industries", "Deepak Nitrite",
+    "Navin Fluorine", "PI Industries", "SRF", "Atul Ltd", "Vinati Organics",
+    "Gujarat Gas", "Petronet LNG", "IGL", "MGL", "Adani Total Gas",
+    "Adani Transmission", "Adani Power", "JSW Energy", "Tata Power", "Torrent Power",
+    "CESC", "Alkem Labs", "Lupin", "Aurobindo Pharma", "Biocon",
+    "Torrent Pharma", "Zydus Life", "Glenmark", "Ipca Labs", "Natco Pharma",
+    "Mankind Pharma", "Laurus Labs", "Max Healthcare", "Fortis Healthcare", "Narayana Health",
+    "Metropolis", "Dr Lal PathLabs", "Vedanta", "Jindal Steel", "NMDC",
+    "SAIL", "Hindustan Zinc", "NALCO", "Astral", "Supreme Industries",
+    "Finolex Cables", "KEI Industries", "Ahluwalia Contracts", "NCC", "PNC Infratech",
+    "KEC International", "Kalpataru Projects", "IRB Infrastructure", "NBCC", "Container Corp",
+    "Concor", "IRCTC", "Mazagon Dock", "BEML", "Cochin Shipyard",
+    "NMDC Steel", "Redington", "V-Guard", "Cera Sanitary", "Kajaria Ceramics",
+    "Somany Ceramics", "Orient Electric", "Crompton Consumer", "Symphony", "Whirlpool",
+    "IFB Industries", "Butterfly Gandhimathi", "TTK Prestige", "Bajaj Electricals", "GMR Airports",
+    "AAI", "Gateway Distriparks", "Allcargo Logistics", "VRL Logistics", "TCI Express",
+    "Blue Dart", "Gati", "Mahindra Logistics", "KPIT Technologies", "Tata Elxsi",
+    "Cyient", "Zensar Tech", "Sonata Software", "Mastek", "Happiest Minds"
 ]
 
-# Breeze-specific 6-character stock codes
-# Note: These are ISEC codes, different from NSE symbols
+# Stock code mapping (6-letter ICICI Breeze codes)
 STOCK_CODE_MAP = {
-    "Reliance": "RELIND",
-    "TCS": "TCS",
+    "Reliance Industries": "RELIND",
+    "TCS": "TCSLTD",
     "HDFC Bank": "HDFCBK",
     "Infosys": "INFOSYSTCH",
-    "ICICI Bank": "ICIBAN",
-    "ITC": "ITC",
-    "Wipro": "WIPRO",
-    "Tata Motors": "TATAMOTORS",
-    "Bajaj Finance": "BAJFINANCE",
+    "ICICI Bank": "ICIBK",
+    "Bharti Airtel": "BHATEL",
+    "ITC": "ITCLTD",
+    "State Bank of India": "SBIL",
+    "HCL Technologies": "HCLTECH",
     "Axis Bank": "AXSB",
-    "Bharti Airtel": "BHARTIARTL",
-    "Hindustan Unilever": "HINDUNILVR",
-    "Kotak Bank": "KOTAKBANK",
-    "L&T": "LT",
+    "Kotak Mahindra Bank": "KOTAKBK",
+    "Larsen & Toubro": "LARSEN",
+    "Bajaj Finance": "BAJFINANCE",
     "Asian Paints": "ASIANPAINT",
     "Maruti Suzuki": "MARUTI",
-    "Titan": "TITAN",
-    "Sun Pharma": "SUNPHARMA",
-    "HCL Tech": "HCLTECH",
-    "Adani Enterprises": "ADANIENT",
+    "Titan Company": "TITAN",
+    "Sun Pharma": "SUNPHAR",
+    "Wipro": "WIPRO",
+    "Ultratech Cement": "ULTRATECH",
+    "Tata Motors": "TATAMOTORS",
+    "Adani Ports": "ADANIPORTS",
+    "Adani Enterprises": "ADANENT",
+    "Tech Mahindra": "TECHM",
+    "Power Grid": "POWGRD",
     "NTPC": "NTPC",
-    "Tata Steel": "TATASTL",
-    "Hindalco": "HINDALCO",
+    "Coal India": "COALINDIA",
+    "Tata Steel": "TATASL",
+    "Bajaj Finserv": "BAJAJFINSV",
+    "Hero MotoCorp": "HEROMOTOCO",
     "IndusInd Bank": "INDUSINDBK",
-    "M&M": "M&M",
-    "Coal India": "COALINDIA"
+    "Mahindra & Mahindra": "MAHIND",
+    "Grasim Industries": "GRASIM",
+    "Hindalco": "HINDALCO",
+    "JSW Steel": "JSWSTL",
+    "SBI Life": "SBILIFE",
+    "ICICI Lombard": "ICICLOMBARD",
+    "Bajaj Auto": "BAJAJAUTO",
+    "HDFC Life": "HDFCLIFE",
+    "Adani Green": "ADANGRN",
+    "Shree Cement": "SHRECEM",
+    "Eicher Motors": "EICHERMOT",
+    "UPL": "UPLLTD",
+    "Tata Consumer": "TATACONSUMER",
+    "Britannia": "BRITANN",
+    "Nestle India": "NESTLE",
+    "Hindustan Unilever": "HINDLV",
+    "Cipla": "CIPLA",
+    "Dr Reddy's": "DRREDDY",
+    "Divi's Labs": "DIVISLAB",
+    "Apollo Hospitals": "APOLLOHOSP",
+    "IOC": "IOCL",
+    "BPCL": "BPCL",
+    "ONGC": "ONGC",
+    "Gail India": "GAIL",
+    "Pidilite": "PIDILITIND",
+    "Berger Paints": "BERGEPAINT",
+    "Havells": "HAVELLS",
+    "Godrej Consumer": "GODREJCP",
+    "Dabur": "DABUR",
+    "Marico": "MARICO",
+    "Colgate": "COLPAL",
+    "United Spirits": "MCDOWELLN",
+    "Varun Beverages": "VBL",
+    "Zomato": "ZOMATO",
+    "Paytm": "PAYTM",
+    "LIC": "LICI",
+    "SBI Cards": "SBICARD",
+    "Cholamandalam": "CHOLAFIN",
+    "Muthoot Finance": "MUTHOOTFIN",
+    "Shriram Finance": "SHRIRAMFIN",
+    "Bosch": "BOSCHLTD",
+    "ABB India": "ABB",
+    "Siemens": "SIEMENS",
+    "Bharat Electronics": "BEL",
+    "BHEL": "BHEL",
+    "HAL": "HAL",
+    "L&T Technology": "LTTS",
+    "Persistent": "PERSISTENT",
+    "Coforge": "COFORGE",
+    "Mphasis": "MPHASIS",
+    "LTIMindtree": "LTIM",
+    "Oracle Financial": "OFSS",
+    "DMart": "DMART",
+    "Trent": "TRENT",
+    "Jubilant Food": "JUBLFOOD",
+    "PVR Inox": "PVRINOX",
+    "IndiGo": "INDIGO",
+    "Indian Hotels": "INDHOTEL",
+    "Oberoi Realty": "OBEROIRLTY",
+    "DLF": "DLFL",
+    "Godrej Properties": "GODREJPROP",
+    "Prestige Estates": "PRESTIGE",
+    "Phoenix Mills": "PHOENIXLTD",
+    "Voltas": "VOLTAS",
+    "Blue Star": "BLUESTARCO",
+    "Crompton Greaves": "CROMPTON",
+    "Polycab": "POLYCAB",
+    "Dixon Tech": "DIXON",
+    "Amber Enterprises": "AMBER",
+    "Tube Investments": "TIINDIA",
+    "Motherson Sumi": "MOTHERSON",
+    "Bharat Forge": "BHARATFORG",
+    "Balkrishna Ind": "BALKRISIND",
+    "Apollo Tyres": "APOLLOTYRE",
+    "MRF": "MRFLTD",
+    "Ashok Leyland": "ASHOKLEY",
+    "TVS Motor": "TVSMOTOR",
+    "Escorts Kubota": "ESCORTS",
+    "Bajaj Holdings": "BAJAJHLDNG",
+    "ICICI Prudential": "ICICIPRULI",
+    "Max Financial": "MFSL",
+    "Star Health": "STARHEALTH",
+    "GIC": "GICRE",
+    "New India Assurance": "NIACL",
+    "Bank of Baroda": "BANKBARODA",
+    "PNB": "PNB",
+    "Canara Bank": "CANBK",
+    "Union Bank": "UNIONBANK",
+    "Indian Bank": "INDIANB",
+    "Bank of India": "BANKINDIA",
+    "Central Bank": "CENTRALBK",
+    "IDBI Bank": "IDBI",
+    "AU Small Finance": "AUBANK",
+    "Bandhan Bank": "BANDHANBNK",
+    "Federal Bank": "FEDERALBNK",
+    "IDFC First Bank": "IDFCFIRSTB",
+    "RBL Bank": "RBLBANK",
+    "Yes Bank": "YESBANK",
+    "City Union Bank": "CUB",
+    "Karur Vysya Bank": "KARURVYSYA",
+    "Manappuram Finance": "MANAPPURAM",
+    "PNB Housing": "PNBHOUSING",
+    "Can Fin Homes": "CANFINHOME",
+    "Aarti Industries": "AARTIIND",
+    "Deepak Nitrite": "DEEPAKNTR",
+    "Navin Fluorine": "NAVINFLUOR",
+    "PI Industries": "PIIND",
+    "SRF": "SRFLTD",
+    "Atul Ltd": "ATUL",
+    "Vinati Organics": "VINATIORGA",
+    "Gujarat Gas": "GUJGASLTD",
+    "Petronet LNG": "PETRONET",
+    "IGL": "IGLLTD",
+    "MGL": "MGL",
+    "Adani Total Gas": "ATGL",
+    "Adani Transmission": "ADANITRANS",
+    "Adani Power": "ADANIPOWER",
+    "JSW Energy": "JSWENERGY",
+    "Tata Power": "TATAPOWER",
+    "Torrent Power": "TORNTPOWER",
+    "CESC": "CESC",
+    "Alkem Labs": "ALKEM",
+    "Lupin": "LUPIN",
+    "Aurobindo Pharma": "AUROPHARMA",
+    "Biocon": "BIOCON",
+    "Torrent Pharma": "TORNTPHARM",
+    "Zydus Life": "ZYDUSLIFE",
+    "Glenmark": "GLENMARK",
+    "Ipca Labs": "IPCALAB",
+    "Natco Pharma": "NATCOPHARM",
+    "Mankind Pharma": "MANKIND",
+    "Laurus Labs": "LAURUSLABS",
+    "Max Healthcare": "MAXHEALTH",
+    "Fortis Healthcare": "FORTIS",
+    "Narayana Health": "NH",
+    "Metropolis": "METROPOLIS",
+    "Dr Lal PathLabs": "LALPATHLAB",
+    "Vedanta": "VEDL",
+    "Jindal Steel": "JINDALSTEL",
+    "NMDC": "NMDC",
+    "SAIL": "SAIL",
+    "Hindustan Zinc": "HINDZINC",
+    "NALCO": "NALCO"
 }
+
 
 FINANCIAL_RSS_FEEDS = [
     ("https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms", "ET Markets"),
@@ -167,7 +352,7 @@ def fetch_historical_data(stock_code, days=30, interval="1day"):
         
         return None
     except Exception as e:
-        st.warning(f"Error fetching {stock_code}: {str(e)}")
+        st.error(f"Error fetching {stock_code}: {str(e)}")
         return None
 
 # --------------------------
@@ -280,7 +465,7 @@ st.title("📈 F&O Dashboard - ICICI Breeze")
 if st.session_state.breeze_connected:
     st.success("✅ Connected to Breeze API")
 else:
-    st.error("❌ Not connected to Breeze API - Update credentials")
+    st.error("❌ Not connected to Breeze API")
     st.stop()
 
 st.markdown("---")
@@ -439,8 +624,26 @@ with tab2:
                         line=dict(color='orange', width=1.5)
                     ))
                 
+                if 'EMA_12' in df.columns:
+                    fig.add_trace(go.Scatter(
+                        x=df.index,
+                        y=df['EMA_12'],
+                        mode='lines',
+                        name='EMA 12',
+                        line=dict(color='green', width=1.5, dash='dash')
+                    ))
+                
+                if 'EMA_26' in df.columns:
+                    fig.add_trace(go.Scatter(
+                        x=df.index,
+                        y=df['EMA_26'],
+                        mode='lines',
+                        name='EMA 26',
+                        line=dict(color='red', width=1.5, dash='dash')
+                    ))
+                
                 fig.update_layout(
-                    title=f"{selected_stock} - Price Chart with SMA",
+                    title=f"{selected_stock} - Price Chart with SMA & EMA",
                     xaxis_title="Date/Time",
                     yaxis_title="Price (₹)",
                     height=500,
@@ -496,7 +699,7 @@ with tab2:
                     st.plotly_chart(fig_macd, use_container_width=True)
         else:
             st.error(f"Could not fetch data for {selected_stock}")
-            st.info(f"💡 Breeze Code: {stock_code} - If this doesn't work, use breeze.get_names() to find the correct code")
+            st.info("Try: 1) Different stock 2) Check stock code with breeze.get_names()")
     else:
         st.error(f"Stock code not found for {selected_stock}")
 
@@ -554,21 +757,38 @@ with tab3:
                                 st.markdown(f"### {arrow} {stock_name}")
                                 st.metric("Price", f"₹{current:.2f}", f"{change:.2f} ({change_pct:.2f}%)")
                                 
-                                # Line chart
-                                fig = go.Figure()
-                                fig.add_trace(go.Scatter(
-                                    x=df.index,
-                                    y=df['Close'],
-                                    mode='lines',
-                                    line=dict(color='green' if change_pct >= 0 else 'red', width=2),
-                                    fill='tozeroy'
-                                ))
-                                fig.update_layout(
-                                    height=200,
-                                    margin=dict(l=10, r=10, t=10, b=10),
-                                    showlegend=False
-                                )
-                                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                                # Candlestick chart
+                                if all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
+                                    fig = go.Figure(data=[go.Candlestick(
+                                        x=df.index,
+                                        open=df['Open'],
+                                        high=df['High'],
+                                        low=df['Low'],
+                                        close=df['Close']
+                                    )])
+                                    fig.update_layout(
+                                        height=250,
+                                        margin=dict(l=10, r=10, t=10, b=10),
+                                        showlegend=False,
+                                        xaxis_rangeslider_visible=False
+                                    )
+                                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                                else:
+                                    # Line chart fallback
+                                    fig = go.Figure()
+                                    fig.add_trace(go.Scatter(
+                                        x=df.index,
+                                        y=df['Close'],
+                                        mode='lines',
+                                        line=dict(color='green' if change_pct >= 0 else 'red', width=2),
+                                        fill='tozeroy'
+                                    ))
+                                    fig.update_layout(
+                                        height=250,
+                                        margin=dict(l=10, r=10, t=10, b=10),
+                                        showlegend=False
+                                    )
+                                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                             else:
                                 st.warning(f"No data for {stock_name}")
                         else:
@@ -579,5 +799,4 @@ with tab3:
 # Footer
 st.markdown("---")
 st.caption("💡 F&O Dashboard powered by ICICI Breeze API")
-st.caption(f"📋 Stock Codes: {', '.join([f'{k}={v}' for k, v in list(STOCK_CODE_MAP.items())[:5]])}...")
 st.caption("⚠ **Disclaimer:** For educational purposes only. Not financial advice.")

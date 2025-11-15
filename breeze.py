@@ -635,9 +635,10 @@ with tab3:
         stock_code = STOCK_CODE_MAP.get(selected_chart_stock)
         
         if stock_code:
-            df = fetch_stock_data_breeze(stock_code, period_days, interval)
+            with st.spinner(f"Loading data for {selected_chart_stock}..."):
+                df = fetch_stock_data_breeze(stock_code, period_days, interval)
             
-            if not df.empty:
+            if not df.empty and 'Close' in df.columns and len(df) > 0:
                 # Calculate indicators
                 df['RSI'] = calculate_rsi(df['Close'])
                 df['MACD'], df['Signal'] = calculate_macd(df['Close'])
@@ -659,38 +660,42 @@ with tab3:
                 st.markdown("---")
                 
                 # Candlestick chart
-                fig = go.Figure(data=[go.Candlestick(
-                    x=df.index,
-                    open=df['Open'],
-                    high=df['High'],
-                    low=df['Low'],
-                    close=df['Close']
-                )])
-                fig.update_layout(
-                    title=f"{selected_chart_stock} Price Chart",
-                    xaxis_title="Date",
-                    yaxis_title="Price (₹)",
-                    height=400,
-                    xaxis_rangeslider_visible=False
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                if all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
+                    fig = go.Figure(data=[go.Candlestick(
+                        x=df.index,
+                        open=df['Open'],
+                        high=df['High'],
+                        low=df['Low'],
+                        close=df['Close']
+                    )])
+                    fig.update_layout(
+                        title=f"{selected_chart_stock} Price Chart ({interval_label})",
+                        xaxis_title="Date",
+                        yaxis_title="Price (₹)",
+                        height=400,
+                        xaxis_rangeslider_visible=False
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
                 
                 # RSI chart
-                fig_rsi = go.Figure()
-                fig_rsi.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI'))
-                fig_rsi.add_hline(y=70, line_dash="dash", line_color="red")
-                fig_rsi.add_hline(y=30, line_dash="dash", line_color="green")
-                fig_rsi.update_layout(title="RSI", height=250)
-                st.plotly_chart(fig_rsi, use_container_width=True)
+                if 'RSI' in df.columns and df['RSI'].notna().any():
+                    fig_rsi = go.Figure()
+                    fig_rsi.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI'))
+                    fig_rsi.add_hline(y=70, line_dash="dash", line_color="red")
+                    fig_rsi.add_hline(y=30, line_dash="dash", line_color="green")
+                    fig_rsi.update_layout(title="RSI", height=250)
+                    st.plotly_chart(fig_rsi, use_container_width=True)
                 
                 # MACD chart
-                fig_macd = go.Figure()
-                fig_macd.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD'))
-                fig_macd.add_trace(go.Scatter(x=df.index, y=df['Signal'], name='Signal'))
-                fig_macd.update_layout(title="MACD", height=250)
-                st.plotly_chart(fig_macd, use_container_width=True)
+                if 'MACD' in df.columns and 'Signal' in df.columns:
+                    fig_macd = go.Figure()
+                    fig_macd.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD'))
+                    fig_macd.add_trace(go.Scatter(x=df.index, y=df['Signal'], name='Signal'))
+                    fig_macd.update_layout(title="MACD", height=250)
+                    st.plotly_chart(fig_macd, use_container_width=True)
             else:
-                st.warning(f"⚠️ Could not fetch data for {selected_chart_stock}")
+                st.error(f"⚠️ Could not fetch data for {selected_chart_stock}. Please try another stock or check your Breeze API connection.")
+                st.info("💡 Tip: Make sure the stock code is correct and you have an active Breeze API session.")
 
 # --------------------------
 # TAB 4: MULTI-CHART
@@ -739,30 +744,35 @@ with tab4:
                         with col:
                             df = fetch_stock_data_breeze(stock_code, days, "1day")
                             
-                            if not df.empty:
+                            if not df.empty and len(df) >= 2 and 'Close' in df.columns:
                                 current = df['Close'].iloc[-1]
                                 prev = df['Close'].iloc[0]
-                                change_pct = ((current - prev) / prev) * 100
-                                color = "green" if change_pct >= 0 else "red"
-                                arrow = "🟢" if change_pct >= 0 else "🔴"
                                 
-                                st.markdown(f"### {arrow} {stock_name}")
-                                st.metric("Price", f"₹{current:.2f}", f"{change_pct:.2f}%")
-                                
-                                fig = go.Figure()
-                                fig.add_trace(go.Scatter(
-                                    x=df.index,
-                                    y=df['Close'],
-                                    mode='lines',
-                                    line=dict(color=color, width=2),
-                                    fill='tozeroy'
-                                ))
-                                fig.update_layout(
-                                    height=200,
-                                    margin=dict(l=10, r=10, t=10, b=10),
-                                    showlegend=False
-                                )
-                                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                                # Check for valid numbers
+                                if pd.notna(current) and pd.notna(prev) and prev != 0:
+                                    change_pct = ((current - prev) / prev) * 100
+                                    color = "green" if change_pct >= 0 else "red"
+                                    arrow = "🟢" if change_pct >= 0 else "🔴"
+                                    
+                                    st.markdown(f"### {arrow} {stock_name}")
+                                    st.metric("Price", f"₹{current:.2f}", f"{change_pct:.2f}%")
+                                    
+                                    fig = go.Figure()
+                                    fig.add_trace(go.Scatter(
+                                        x=df.index,
+                                        y=df['Close'],
+                                        mode='lines',
+                                        line=dict(color=color, width=2),
+                                        fill='tozeroy'
+                                    ))
+                                    fig.update_layout(
+                                        height=200,
+                                        margin=dict(l=10, r=10, t=10, b=10),
+                                        showlegend=False
+                                    )
+                                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                                else:
+                                    st.warning(f"⚠️ Invalid data for {stock_name}")
                             else:
                                 st.warning(f"⚠️ No data for {stock_name}")
         else:

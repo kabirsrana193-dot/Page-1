@@ -43,33 +43,33 @@ FNO_STOCKS = [
 
 # Stock code mapping for Breeze API
 STOCK_CODE_MAP = {
-    "Reliance": "RELIANCE", "TCS": "TCS", "HDFC Bank": "HDFCBANK",
-    "Infosys": "INFY", "ICICI Bank": "ICICIBANK", "Bharti Airtel": "BHARTIARTL",
+    "Reliance": "RELIND", "TCS": "TCS", "HDFC Bank": "HDFCBK",
+    "Infosys": "INFY", "ICICI Bank": "ICIBAN", "Bharti Airtel": "BHARTI",
     "ITC": "ITC", "State Bank of India": "SBIN", "SBI": "SBIN",
-    "Hindustan Unilever": "HINDUNILVR", "HUL": "HINDUNILVR",
-    "Bajaj Finance": "BAJFINANCE", "Kotak Mahindra Bank": "KOTAKBANK",
-    "Axis Bank": "AXISBANK", "Larsen & Toubro": "LT", "L&T": "LT",
-    "Asian Paints": "ASIANPAINT", "Maruti Suzuki": "MARUTI",
-    "Titan": "TITAN", "Sun Pharma": "SUNPHARMA", "HCL Tech": "HCLTECH",
-    "Adani Enterprises": "ADANIENT", "Tata Motors": "TATAMOTORS",
-    "Wipro": "WIPRO", "NTPC": "NTPC", "Bajaj Finserv": "BAJAJFINSV",
-    "Tata Steel": "TATASTEEL", "Hindalco": "HINDALCO",
-    "IndusInd Bank": "INDUSINDBK", "Mahindra & Mahindra": "M&M",
-    "M&M": "M&M", "Coal India": "COALINDIA", "JSW Steel": "JSWSTEEL",
-    "Tata Consumer": "TATACONSUM", "Eicher Motors": "EICHERMOT",
-    "BPCL": "BPCL", "Tech Mahindra": "TECHM", "Dr Reddy": "DRREDDY",
-    "Cipla": "CIPLA", "UPL": "UPL", "Britannia": "BRITANNIA",
-    "Divi's Lab": "DIVISLAB", "ONGC": "ONGC", "IOC": "IOC",
-    "Vedanta": "VEDL", "Bajaj Auto": "BAJAJ-AUTO", "SBI Life": "SBILIFE",
-    "HDFC Life": "HDFCLIFE", "Adani Ports": "ADANIPORTS",
-    "UltraTech": "ULTRACEMCO", "Hero MotoCorp": "HEROMOTOCO",
+    "Hindustan Unilever": "HINUNL", "HUL": "HINUNL",
+    "Bajaj Finance": "BAJFIN", "Kotak Mahindra Bank": "KOTBAN",
+    "Axis Bank": "AXIBNK", "Larsen & Toubro": "LT", "L&T": "LT",
+    "Asian Paints": "ASIPAI", "Maruti Suzuki": "MARUTI",
+    "Titan": "TITAN", "Sun Pharma": "SUNPHA", "HCL Tech": "HCLTEC",
+    "Adani Enterprises": "ADAENT", "Tata Motors": "TATAMO",
+    "Wipro": "WIPRO", "NTPC": "NTPC", "Bajaj Finserv": "BAJFNS",
+    "Tata Steel": "TATSTE", "Hindalco": "HINDAL",
+    "IndusInd Bank": "INDBNK", "Mahindra & Mahindra": "M&M",
+    "M&M": "M&M", "Coal India": "COALIN", "JSW Steel": "JSWSTL",
+    "Tata Consumer": "TATCON", "Eicher Motors": "EICMOT",
+    "BPCL": "BPCL", "Tech Mahindra": "TECMAH", "Dr Reddy": "DRREDL",
+    "Cipla": "CIPLA", "UPL": "UPL", "Britannia": "BRITAI",
+    "Divi's Lab": "DIVLAB", "ONGC": "ONGC", "IOC": "IOC",
+    "Vedanta": "VEDANT", "Bajaj Auto": "BAJAUT", "SBI Life": "SBLIFE",
+    "HDFC Life": "HDFLIFE", "Adani Ports": "ADANIS",
+    "UltraTech": "ULTCEM", "Hero MotoCorp": "HEROMO",
     "GAIL": "GAIL", "Zomato": "ZOMATO", "Trent": "TRENT",
-    "DMart": "DMART", "Apollo Hospitals": "APOLLOHOSP",
-    "Lupin": "LUPIN", "DLF": "DLF", "Bank of Baroda": "BANKBARODA",
-    "Canara Bank": "CANBK", "Federal Bank": "FEDERALBNK",
-    "InterGlobe Aviation": "INDIGO", "Adani Green": "ADANIGREEN",
-    "Siemens": "SIEMENS", "Bharat Electronics": "BEL", "BEL": "BEL",
-    "HAL": "HAL", "Shriram Finance": "SHRIRAMFIN", "IRCTC": "IRCTC"
+    "DMart": "AVEMRT", "Apollo Hospitals": "APOLLOH",
+    "Lupin": "LUPIN", "DLF": "DLF", "Bank of Baroda": "BOBBNK",
+    "Canara Bank": "CANBK", "Federal Bank": "FEDBNK",
+    "InterGlobe Aviation": "INDIGO", "Adani Green": "ADAGRN",
+    "Siemens": "SIEMEN", "Bharat Electronics": "BHAREL", "BEL": "BHAREL",
+    "HAL": "HAL", "Shriram Finance": "SHRFIN", "IRCTC": "IRCTC"
 }
 
 FINANCIAL_RSS_FEEDS = [
@@ -98,10 +98,8 @@ if 'watchlist_stocks' not in st.session_state:
     ]
 if 'last_refresh' not in st.session_state:
     st.session_state.last_refresh = None
-if 'subscribed_stocks' not in st.session_state:
-    st.session_state.subscribed_stocks = set()
-if 'refresh_trigger' not in st.session_state:
-    st.session_state.refresh_trigger = 0
+if 'api_call_count' not in st.session_state:
+    st.session_state.api_call_count = 0
 
 # --------------------------
 # Breeze Connection
@@ -117,30 +115,6 @@ if not st.session_state.breeze_connected:
         st.session_state.breeze_connected = False
 
 # --------------------------
-# Helper Functions
-# --------------------------
-def subscribe_to_stock(breeze, stock_code):
-    """Subscribe to a stock for live data"""
-    try:
-        if stock_code in st.session_state.subscribed_stocks:
-            return True
-            
-        response = breeze.subscribe_feeds(
-            exchange_code="NSE",
-            stock_code=stock_code,
-            product_type="cash",
-            get_market_depth=False,
-            get_exchange_quotes=True
-        )
-        
-        if response and 'Success' in response:
-            st.session_state.subscribed_stocks.add(stock_code)
-            return True
-        return False
-    except:
-        return False
-
-# --------------------------
 # Stock Data Functions
 # --------------------------
 @st.cache_data(ttl=300)
@@ -151,13 +125,10 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
         if not breeze:
             return pd.DataFrame()
         
-        # Don't subscribe for historical data - only needed for websockets
-        # subscribe_to_stock(breeze, stock_code)
-        
         to_date = datetime.now()
         from_date = to_date - timedelta(days=days)
         
-        # Breeze API requires specific date format with UTC timezone
+        # Breeze API requires ISO 8601 format with .000Z
         from_date_str = from_date.strftime("%Y-%m-%d") + "T07:00:00.000Z"
         to_date_str = to_date.strftime("%Y-%m-%d") + "T23:59:59.000Z"
         
@@ -170,7 +141,8 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
             product_type="cash"
         )
         
-        # Add a small delay to avoid rate limiting (100 calls/min = 0.6s between calls)
+        # Rate limiting: 100 calls/min = 0.6s minimum between calls
+        st.session_state.api_call_count += 1
         time.sleep(0.7)
         
         if response and 'Success' in response:
@@ -178,10 +150,11 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
             if data and len(data) > 0:
                 df = pd.DataFrame(data)
                 
+                # Map column names - Breeze uses 'datetime' not 'date'
                 column_mapping = {}
                 for col in df.columns:
                     col_lower = col.lower()
-                    if 'date' in col_lower or 'time' in col_lower:
+                    if 'datetime' in col_lower:
                         column_mapping[col] = 'Date'
                     elif col_lower == 'open':
                         column_mapping[col] = 'Open'
@@ -202,6 +175,7 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
                     df = df.set_index('Date')
                     df = df.sort_index()
                     
+                    # Convert to numeric
                     numeric_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
                     for col in numeric_cols:
                         if col in df.columns:
@@ -218,7 +192,8 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
                         return df[available_cols]
         
         return pd.DataFrame()
-    except:
+    except Exception as e:
+        st.error(f"Error fetching data for {stock_code}: {str(e)}")
         return pd.DataFrame()
 
 # --------------------------
@@ -305,7 +280,8 @@ def generate_signal(stock_code):
             'recommendation': recommendation,
             'score': score
         }
-    except:
+    except Exception as e:
+        st.error(f"Error generating signal for {stock_code}: {str(e)}")
         return None
 
 # --------------------------
@@ -377,6 +353,10 @@ def fetch_news(num_articles=12, specific_stock=None):
 # --------------------------
 # Streamlit App
 # --------------------------
+
+# API Call Counter Warning
+if st.session_state.api_call_count > 4500:
+    st.warning(f"⚠️ API calls today: {st.session_state.api_call_count}/5000. Approaching daily limit!")
 
 # Main tabs
 tab1, tab2, tab3, tab4 = st.tabs(["📰 News", "📈 Technical", "💹 Charts", "📊 Multi-Chart"])
@@ -508,7 +488,6 @@ with tab2:
                         st.session_state.technical_data.append(signal_data)
                     
                     progress_bar.progress((idx + 1) / num_stocks)
-                    time.sleep(0.2)
                 
                 progress_bar.empty()
                 status_text.empty()
@@ -766,6 +745,6 @@ st.caption("⚠ **Disclaimer:** For educational purposes only. Not financial adv
 
 # Connection status
 if st.session_state.breeze_connected:
-    st.caption("🔌 **Connection Status:** ✅ Connected to Breeze API")
+    st.caption(f"🔌 **Connection Status:** ✅ Connected to Breeze API | API Calls: {st.session_state.api_call_count}/5000")
 else:
     st.caption("🔌 **Connection Status:** ❌ Disconnected - Check your credentials")

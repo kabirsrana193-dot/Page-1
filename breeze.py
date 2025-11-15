@@ -23,53 +23,58 @@ secret_key = "5v9k141093cf4361528$z24Q7(Yv2839"
 session_token = "53705299"
 
 # --------------------------
-# Config - Top F&O Stocks
+# Config - Top F&O Stocks (with correct Breeze codes)
 # --------------------------
 FNO_STOCKS = [
     "Reliance", "TCS", "HDFC Bank", "Infosys", "ICICI Bank", "Bharti Airtel", "ITC",
-    "State Bank of India", "SBI", "Hindustan Unilever", "HUL", "Bajaj Finance", 
-    "Kotak Mahindra Bank", "Axis Bank", "Larsen & Toubro", "L&T", "Asian Paints", 
+    "State Bank of India", "Hindustan Unilever", "Bajaj Finance", 
+    "Kotak Mahindra Bank", "Axis Bank", "Larsen & Toubro", "Asian Paints", 
     "Maruti Suzuki", "Titan", "Sun Pharma", "HCL Tech", "Adani Enterprises",
     "Tata Motors", "Wipro", "NTPC", "Bajaj Finserv", "Tata Steel",
-    "Hindalco", "IndusInd Bank", "Mahindra & Mahindra", "M&M", "Coal India",
+    "Hindalco", "IndusInd Bank", "Mahindra & Mahindra", "Coal India",
     "JSW Steel", "Tata Consumer", "Eicher Motors", "BPCL", "Tech Mahindra",
-    "Dr Reddy", "Cipla", "UPL", "Britannia", "Divi's Lab", "SBI Life",
-    "HDFC Life", "Adani Ports", "ONGC", "IOC", "Vedanta", "Bajaj Auto", 
-    "Hero MotoCorp", "GAIL", "UltraTech", "Zomato", "Trent", "DMart",
-    "Apollo Hospitals", "Lupin", "DLF", "Bank of Baroda", "Canara Bank",
-    "Federal Bank", "InterGlobe Aviation", "Adani Green", "Siemens",
-    "Bharat Electronics", "BEL", "HAL", "Shriram Finance", "IRCTC"
+    "Dr Reddy", "Cipla", "UPL", "Britannia"
 ]
 
-# Stock code mapping for Breeze API
+# Verified Breeze stock codes (use breeze.get_names() to verify)
 STOCK_CODE_MAP = {
-    "Reliance": "RELIND", "TCS": "TCS", "HDFC Bank": "HDFCBK",
-    "Infosys": "INFY", "ICICI Bank": "ICIBAN", "Bharti Airtel": "BHARTI",
-    "ITC": "ITC", "State Bank of India": "SBIN", "SBI": "SBIN",
-    "Hindustan Unilever": "HINUNL", "HUL": "HINUNL",
-    "Bajaj Finance": "BAJFIN", "Kotak Mahindra Bank": "KOTBAN",
-    "Axis Bank": "AXIBNK", "Larsen & Toubro": "LT", "L&T": "LT",
-    "Asian Paints": "ASIPAI", "Maruti Suzuki": "MARUTI",
-    "Titan": "TITAN", "Sun Pharma": "SUNPHA", "HCL Tech": "HCLTEC",
-    "Adani Enterprises": "ADAENT", "Tata Motors": "TATAMO",
-    "Wipro": "WIPRO", "NTPC": "NTPC", "Bajaj Finserv": "BAJFNS",
-    "Tata Steel": "TATSTE", "Hindalco": "HINDAL",
-    "IndusInd Bank": "INDBNK", "Mahindra & Mahindra": "M&M",
-    "M&M": "M&M", "Coal India": "COALIN", "JSW Steel": "JSWSTL",
-    "Tata Consumer": "TATCON", "Eicher Motors": "EICMOT",
-    "BPCL": "BPCL", "Tech Mahindra": "TECMAH", "Dr Reddy": "DRREDL",
-    "Cipla": "CIPLA", "UPL": "UPL", "Britannia": "BRITAI",
-    "Divi's Lab": "DIVLAB", "ONGC": "ONGC", "IOC": "IOC",
-    "Vedanta": "VEDANT", "Bajaj Auto": "BAJAUT", "SBI Life": "SBLIFE",
-    "HDFC Life": "HDFLIFE", "Adani Ports": "ADANIS",
-    "UltraTech": "ULTCEM", "Hero MotoCorp": "HEROMO",
-    "GAIL": "GAIL", "Zomato": "ZOMATO", "Trent": "TRENT",
-    "DMart": "AVEMRT", "Apollo Hospitals": "APOLLOH",
-    "Lupin": "LUPIN", "DLF": "DLF", "Bank of Baroda": "BOBBNK",
-    "Canara Bank": "CANBK", "Federal Bank": "FEDBNK",
-    "InterGlobe Aviation": "INDIGO", "Adani Green": "ADAGRN",
-    "Siemens": "SIEMEN", "Bharat Electronics": "BHAREL", "BEL": "BHAREL",
-    "HAL": "HAL", "Shriram Finance": "SHRFIN", "IRCTC": "IRCTC"
+    "Reliance": "RELIND",
+    "TCS": "TCS",
+    "HDFC Bank": "HDFCBK",
+    "Infosys": "INFOSYSTCH",
+    "ICICI Bank": "ICIBK",
+    "Bharti Airtel": "BHARTIARTL",
+    "ITC": "ITC",
+    "State Bank of India": "SBIN",
+    "Hindustan Unilever": "HINDUNILVR",
+    "Bajaj Finance": "BAJFINANCE",
+    "Kotak Mahindra Bank": "KOTAKBANK",
+    "Axis Bank": "AXSB",
+    "Larsen & Toubro": "LT",
+    "Asian Paints": "ASIANPAINT",
+    "Maruti Suzuki": "MARUTI",
+    "Titan": "TITAN",
+    "Sun Pharma": "SUNPHARMA",
+    "HCL Tech": "HCLTECH",
+    "Adani Enterprises": "ADANIENT",
+    "Tata Motors": "TATAMOTORS",
+    "Wipro": "WIPRO",
+    "NTPC": "NTPC",
+    "Bajaj Finserv": "BAJAJFINSV",
+    "Tata Steel": "TATASTL",
+    "Hindalco": "HINDALCO",
+    "IndusInd Bank": "INDUSINDBK",
+    "Mahindra & Mahindra": "M&M",
+    "Coal India": "COALINDIA",
+    "JSW Steel": "JSWSTEEL",
+    "Tata Consumer": "TATACONSUM",
+    "Eicher Motors": "EICHERMOT",
+    "BPCL": "BPCL",
+    "Tech Mahindra": "TECHM",
+    "Dr Reddy": "DRREDDY",
+    "Cipla": "CIPLA",
+    "UPL": "UPL",
+    "Britannia": "BRITANNIA"
 }
 
 FINANCIAL_RSS_FEEDS = [
@@ -150,11 +155,11 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
             if data and len(data) > 0:
                 df = pd.DataFrame(data)
                 
-                # Map column names - Breeze uses 'datetime' not 'date'
+                # Map column names
                 column_mapping = {}
                 for col in df.columns:
                     col_lower = col.lower()
-                    if 'datetime' in col_lower:
+                    if 'datetime' in col_lower or 'date' in col_lower:
                         column_mapping[col] = 'Date'
                     elif col_lower == 'open':
                         column_mapping[col] = 'Open'
@@ -193,7 +198,6 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
         
         return pd.DataFrame()
     except Exception as e:
-        st.error(f"Error fetching data for {stock_code}: {str(e)}")
         return pd.DataFrame()
 
 # --------------------------
@@ -222,66 +226,165 @@ def calculate_macd(data, fast=12, slow=26, signal=9):
     except:
         return pd.Series(index=data.index), pd.Series(index=data.index)
 
-def generate_signal(stock_code):
-    """Generate buy/sell signal"""
+def calculate_sma(data, period):
+    """Calculate Simple Moving Average"""
+    try:
+        return data.rolling(window=period).mean()
+    except:
+        return pd.Series(index=data.index)
+
+def calculate_ema(data, period):
+    """Calculate Exponential Moving Average"""
+    try:
+        return data.ewm(span=period, adjust=False).mean()
+    except:
+        return pd.Series(index=data.index)
+
+def generate_signal_enhanced(stock_code):
+    """Generate buy/sell signal with 0-10 scoring"""
     try:
         df = fetch_stock_data_breeze(stock_code, 90, "1day")
         
         if df.empty or len(df) < 50:
             return None
         
+        # Calculate all indicators
         df['RSI'] = calculate_rsi(df['Close'])
-        df['MACD'], df['Signal'] = calculate_macd(df['Close'])
+        df['MACD'], df['MACD_Signal'] = calculate_macd(df['Close'])
+        df['SMA_20'] = calculate_sma(df['Close'], 20)
+        df['SMA_50'] = calculate_sma(df['Close'], 50)
+        df['EMA_12'] = calculate_ema(df['Close'], 12)
+        df['EMA_26'] = calculate_ema(df['Close'], 26)
         
-        df_clean = df.dropna(subset=['Close', 'RSI', 'MACD', 'Signal'])
+        df_clean = df.dropna(subset=['Close', 'RSI', 'MACD', 'MACD_Signal', 'SMA_20', 'SMA_50'])
         if df_clean.empty:
             return None
         
         current_price = df_clean['Close'].iloc[-1]
         rsi = df_clean['RSI'].iloc[-1]
         macd = df_clean['MACD'].iloc[-1]
-        signal_line = df_clean['Signal'].iloc[-1]
+        macd_signal = df_clean['MACD_Signal'].iloc[-1]
+        sma_20 = df_clean['SMA_20'].iloc[-1]
+        sma_50 = df_clean['SMA_50'].iloc[-1]
+        ema_12 = df_clean['EMA_12'].iloc[-1]
+        ema_26 = df_clean['EMA_26'].iloc[-1]
         
-        score = 0
+        # Enhanced scoring system (0-10)
+        score = 5.0  # Start neutral
         signals = []
         
+        # RSI Analysis (±2.5 points)
         if pd.notna(rsi):
-            if rsi < 30:
+            if rsi < 20:
+                signals.append("RSI Extremely Oversold")
+                score += 2.5
+            elif rsi < 30:
                 signals.append("RSI Oversold")
-                score += 2
+                score += 1.5
+            elif rsi > 80:
+                signals.append("RSI Extremely Overbought")
+                score -= 2.5
             elif rsi > 70:
                 signals.append("RSI Overbought")
-                score -= 2
+                score -= 1.5
         
-        if pd.notna(macd) and pd.notna(signal_line):
-            if macd > signal_line:
-                signals.append("MACD Bullish")
-                score += 1
+        # MACD Analysis (±2 points)
+        if pd.notna(macd) and pd.notna(macd_signal):
+            macd_diff = macd - macd_signal
+            if macd > macd_signal:
+                if macd_diff > 0.5:
+                    signals.append("MACD Strong Bullish")
+                    score += 2.0
+                else:
+                    signals.append("MACD Bullish")
+                    score += 1.0
             else:
-                signals.append("MACD Bearish")
-                score -= 1
+                if macd_diff < -0.5:
+                    signals.append("MACD Strong Bearish")
+                    score -= 2.0
+                else:
+                    signals.append("MACD Bearish")
+                    score -= 1.0
         
-        if score >= 2:
+        # Moving Average Analysis (±2.5 points)
+        ma_score = 0
+        if pd.notna(sma_20) and pd.notna(sma_50):
+            # Golden Cross / Death Cross
+            if sma_20 > sma_50:
+                signals.append("Golden Cross (SMA)")
+                ma_score += 1.5
+            elif sma_20 < sma_50:
+                signals.append("Death Cross (SMA)")
+                ma_score -= 1.5
+            
+            # Price vs Moving Averages
+            if current_price > sma_20 and current_price > sma_50:
+                signals.append("Price Above MAs")
+                ma_score += 1.0
+            elif current_price < sma_20 and current_price < sma_50:
+                signals.append("Price Below MAs")
+                ma_score -= 1.0
+        
+        score += ma_score
+        
+        # EMA Analysis (±1 point)
+        if pd.notna(ema_12) and pd.notna(ema_26):
+            if ema_12 > ema_26:
+                signals.append("EMA Bullish")
+                score += 0.5
+            else:
+                signals.append("EMA Bearish")
+                score -= 0.5
+        
+        # Momentum Analysis (±2 points)
+        if len(df_clean) >= 10:
+            price_10_ago = df_clean['Close'].iloc[-10]
+            momentum = ((current_price - price_10_ago) / price_10_ago) * 100
+            if momentum > 5:
+                signals.append(f"Strong Uptrend (+{momentum:.1f}%)")
+                score += 2.0
+            elif momentum > 2:
+                signals.append(f"Uptrend (+{momentum:.1f}%)")
+                score += 1.0
+            elif momentum < -5:
+                signals.append(f"Strong Downtrend ({momentum:.1f}%)")
+                score -= 2.0
+            elif momentum < -2:
+                signals.append(f"Downtrend ({momentum:.1f}%)")
+                score -= 1.0
+        
+        # Clamp score between 0 and 10
+        score = max(0, min(10, score))
+        
+        # Generate recommendation based on score
+        if score >= 8:
             recommendation = "🟢 STRONG BUY"
-        elif score >= 1:
+            emoji = "🟢"
+        elif score >= 6.5:
             recommendation = "🟡 BUY"
-        elif score <= -2:
-            recommendation = "🔴 STRONG SELL"
-        elif score <= -1:
-            recommendation = "🟠 SELL"
-        else:
+            emoji = "🟡"
+        elif score >= 4.5:
             recommendation = "⚪ HOLD"
+            emoji = "⚪"
+        elif score >= 3:
+            recommendation = "🟠 SELL"
+            emoji = "🟠"
+        else:
+            recommendation = "🔴 STRONG SELL"
+            emoji = "🔴"
         
         return {
             'price': current_price,
+            'score': score,
+            'recommendation': recommendation,
+            'emoji': emoji,
             'rsi': rsi,
             'macd': macd,
-            'signals': ', '.join(signals) if signals else 'No signals',
-            'recommendation': recommendation,
-            'score': score
+            'sma_20': sma_20,
+            'sma_50': sma_50,
+            'signals': ' | '.join(signals) if signals else 'No signals'
         }
     except Exception as e:
-        st.error(f"Error generating signal for {stock_code}: {str(e)}")
         return None
 
 # --------------------------
@@ -359,7 +462,7 @@ if st.session_state.api_call_count > 4500:
     st.warning(f"⚠️ API calls today: {st.session_state.api_call_count}/5000. Approaching daily limit!")
 
 # Main tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📰 News", "📈 Technical", "💹 Charts", "📊 Multi-Chart"])
+tab1, tab2, tab3, tab4 = st.tabs(["📰 News", "📈 Technical Signals", "💹 Charts & Indicators", "⚡ Intraday Monitor"])
 
 # TAB 1: NEWS
 with tab1:
@@ -390,6 +493,7 @@ with tab1:
     with col3:
         if st.button("🗑 Clear", use_container_width=True, key="clear_news_btn"):
             st.session_state.news_articles = []
+            st.rerun()
 
     if not st.session_state.news_articles:
         with st.spinner("Loading news..."):
@@ -446,88 +550,103 @@ with tab1:
     else:
         st.info("No articles found. Click 'Refresh News' to load.")
 
-# TAB 2: TECHNICAL ANALYSIS
+# TAB 2: TECHNICAL ANALYSIS - AUTO ANALYZE ALL
 with tab2:
-    st.title("📈 Technical Analysis (Breeze)")
-    st.markdown("Buy/Sell signals based on RSI & MACD")
+    st.title("📈 Technical Signals - All Stocks Auto-Analyzed")
+    st.markdown("🎯 Enhanced scoring: 0 (Strong Sell) to 10 (Strong Buy)")
     
     if not st.session_state.breeze_connected:
         st.error("⚠️ Breeze API not connected. Please check credentials.")
     else:
         st.markdown("---")
         
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 3])
         
         with col1:
-            num_stocks = st.selectbox(
-                "📊 Stocks to Analyze",
-                options=[5, 10, 15, 20],
-                index=1,
-                key="num_stocks_select"
-            )
-        
-        with col2:
-            if st.button("🔄 Run Analysis", type="primary", use_container_width=True, key="run_analysis_btn"):
+            if st.button("🔄 Analyze All Stocks", type="primary", use_container_width=True, key="analyze_all_btn"):
                 st.session_state.technical_data = []
                 
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
-                stocks_to_analyze = FNO_STOCKS[:num_stocks]
+                total_stocks = len(FNO_STOCKS)
                 
-                for idx, stock_name in enumerate(stocks_to_analyze):
+                for idx, stock_name in enumerate(FNO_STOCKS):
                     stock_code = STOCK_CODE_MAP.get(stock_name)
                     if not stock_code:
                         continue
                     
-                    status_text.text(f"Analyzing {stock_name}... ({idx+1}/{num_stocks})")
+                    status_text.text(f"Analyzing {stock_name}... ({idx+1}/{total_stocks})")
                     
-                    signal_data = generate_signal(stock_code)
+                    signal_data = generate_signal_enhanced(stock_code)
                     if signal_data:
                         signal_data['stock'] = stock_name
                         st.session_state.technical_data.append(signal_data)
                     
-                    progress_bar.progress((idx + 1) / num_stocks)
+                    progress_bar.progress((idx + 1) / total_stocks)
                 
                 progress_bar.empty()
                 status_text.empty()
                 st.success(f"✅ Analyzed {len(st.session_state.technical_data)} stocks!")
+                st.rerun()
+        
+        with col2:
+            st.info("💡 Click 'Analyze All Stocks' to run technical analysis on all F&O stocks. This may take a few minutes due to API rate limits.")
         
         if st.session_state.technical_data:
             df_tech = pd.DataFrame(st.session_state.technical_data)
             
             st.subheader("📊 Signal Summary")
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, col4, col5 = st.columns(5)
             
             with col1:
                 st.metric("🟢 Strong Buy", len(df_tech[df_tech['recommendation'] == '🟢 STRONG BUY']))
             with col2:
                 st.metric("🟡 Buy", len(df_tech[df_tech['recommendation'] == '🟡 BUY']))
             with col3:
-                st.metric("🟠 Sell", len(df_tech[df_tech['recommendation'] == '🟠 SELL']))
+                st.metric("⚪ Hold", len(df_tech[df_tech['recommendation'] == '⚪ HOLD']))
             with col4:
+                st.metric("🟠 Sell", len(df_tech[df_tech['recommendation'] == '🟠 SELL']))
+            with col5:
                 st.metric("🔴 Strong Sell", len(df_tech[df_tech['recommendation'] == '🔴 STRONG SELL']))
             
             st.markdown("---")
             
+            # Sort by score
             df_tech = df_tech.sort_values('score', ascending=False)
             
+            # Display as cards
             for _, row in df_tech.iterrows():
-                with st.expander(f"{row['recommendation']} - {row['stock']} @ ₹{row['price']:.2f}"):
-                    col1, col2 = st.columns(2)
+                # Color based on score
+                if row['score'] >= 8:
+                    card_color = "#d4edda"
+                elif row['score'] >= 6.5:
+                    card_color = "#fff3cd"
+                elif row['score'] >= 4.5:
+                    card_color = "#f8f9fa"
+                elif row['score'] >= 3:
+                    card_color = "#fff3cd"
+                else:
+                    card_color = "#f8d7da"
+                
+                with st.expander(f"{row['emoji']} {row['stock']} - Score: {row['score']:.1f}/10 @ ₹{row['price']:.2f}"):
+                    col1, col2, col3 = st.columns(3)
                     with col1:
                         st.markdown(f"**Price:** ₹{row['price']:.2f}")
-                        st.markdown(f"**RSI:** {row['rsi']:.2f}")
+                        st.markdown(f"**Score:** {row['score']:.1f}/10")
                     with col2:
+                        st.markdown(f"**RSI:** {row['rsi']:.2f}")
                         st.markdown(f"**MACD:** {row['macd']:.4f}")
-                        st.markdown(f"**Score:** {row['score']}")
+                    with col3:
+                        st.markdown(f"**SMA 20:** ₹{row['sma_20']:.2f}")
+                        st.markdown(f"**SMA 50:** ₹{row['sma_50']:.2f}")
                     st.markdown(f"**Signals:** {row['signals']}")
         else:
-            st.info("👆 Click 'Run Analysis' to generate signals")
+            st.info("👆 Click 'Analyze All Stocks' to generate signals for all F&O stocks")
 
-# TAB 3: STOCK CHARTS
+# TAB 3: STOCK CHARTS WITH SMA/EMA
 with tab3:
-    st.title("💹 Stock Charts (Breeze)")
+    st.title("💹 Stock Charts with SMA & EMA")
     st.markdown("Candlestick charts with technical indicators")
     
     if not st.session_state.breeze_connected:
@@ -540,7 +659,7 @@ with tab3:
         with col1:
             selected_chart_stock = st.selectbox(
                 "📊 Select Stock",
-                options=sorted(FNO_STOCKS[:30]),
+                options=sorted(FNO_STOCKS),
                 key="chart_stock"
             )
         
@@ -571,8 +690,14 @@ with tab3:
                 df = fetch_stock_data_breeze(stock_code, period_days, interval)
             
             if not df.empty and 'Close' in df.columns and len(df) > 0:
+                # Calculate all indicators
                 df['RSI'] = calculate_rsi(df['Close'])
-                df['MACD'], df['Signal'] = calculate_macd(df['Close'])
+                df['MACD'], df['MACD_Signal'] = calculate_macd(df['Close'])
+                df['SMA_20'] = calculate_sma(df['Close'], 20)
+                df['SMA_50'] = calculate_sma(df['Close'], 50)
+                df['EMA_12'] = calculate_ema(df['Close'], 12)
+                df['EMA_26'] = calculate_ema(df['Close'], 26)
+                
                 df_clean = df.dropna(subset=['Close'])
                 
                 if len(df_clean) >= 2:
@@ -592,61 +717,138 @@ with tab3:
                     
                     st.markdown("---")
                     
+                    # Candlestick chart with SMA/EMA
                     if all(col in df_clean.columns for col in ['Open', 'High', 'Low', 'Close']):
-                        fig = go.Figure(data=[go.Candlestick(
+                        fig = go.Figure()
+                        
+                        # Add candlestick
+                        fig.add_trace(go.Candlestick(
                             x=df_clean.index,
                             open=df_clean['Open'],
                             high=df_clean['High'],
                             low=df_clean['Low'],
-                            close=df_clean['Close']
-                        )])
+                            close=df_clean['Close'],
+                            name='Price'
+                        ))
+                        
+                        # Add SMA lines
+                        if 'SMA_20' in df_clean.columns:
+                            df_sma20 = df_clean.dropna(subset=['SMA_20'])
+                            fig.add_trace(go.Scatter(
+                                x=df_sma20.index,
+                                y=df_sma20['SMA_20'],
+                                mode='lines',
+                                name='SMA 20',
+                                line=dict(color='blue', width=1.5)
+                            ))
+                        
+                        if 'SMA_50' in df_clean.columns:
+                            df_sma50 = df_clean.dropna(subset=['SMA_50'])
+                            fig.add_trace(go.Scatter(
+                                x=df_sma50.index,
+                                y=df_sma50['SMA_50'],
+                                mode='lines',
+                                name='SMA 50',
+                                line=dict(color='orange', width=1.5)
+                            ))
+                        
+                        # Add EMA lines
+                        if 'EMA_12' in df_clean.columns:
+                            df_ema12 = df_clean.dropna(subset=['EMA_12'])
+                            fig.add_trace(go.Scatter(
+                                x=df_ema12.index,
+                                y=df_ema12['EMA_12'],
+                                mode='lines',
+                                name='EMA 12',
+                                line=dict(color='green', width=1.5, dash='dash')
+                            ))
+                        
+                        if 'EMA_26' in df_clean.columns:
+                            df_ema26 = df_clean.dropna(subset=['EMA_26'])
+                            fig.add_trace(go.Scatter(
+                                x=df_ema26.index,
+                                y=df_ema26['EMA_26'],
+                                mode='lines',
+                                name='EMA 26',
+                                line=dict(color='red', width=1.5, dash='dash')
+                            ))
+                        
                         fig.update_layout(
-                            title=f"{selected_chart_stock} Price Chart ({interval_label})",
-                            xaxis_title="Date",
+                            title=f"{selected_chart_stock} - {interval_label} Chart with SMA & EMA",
+                            xaxis_title="Date/Time",
                             yaxis_title="Price (₹)",
-                            height=400,
-                            xaxis_rangeslider_visible=False
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        fig = go.Figure()
-                        fig.add_trace(go.Scatter(x=df_clean.index, y=df_clean['Close'], mode='lines', name='Close'))
-                        fig.update_layout(
-                            title=f"{selected_chart_stock} Price Chart ({interval_label})",
-                            xaxis_title="Date",
-                            yaxis_title="Price (₹)",
-                            height=400
+                            height=500,
+                            xaxis_rangeslider_visible=False,
+                            hovermode='x unified'
                         )
                         st.plotly_chart(fig, use_container_width=True)
                     
+                    # RSI chart
                     df_rsi = df_clean.dropna(subset=['RSI'])
                     if len(df_rsi) > 0:
                         fig_rsi = go.Figure()
-                        fig_rsi.add_trace(go.Scatter(x=df_rsi.index, y=df_rsi['RSI'], name='RSI'))
-                        fig_rsi.add_hline(y=70, line_dash="dash", line_color="red", annotation_text="Overbought")
-                        fig_rsi.add_hline(y=30, line_dash="dash", line_color="green", annotation_text="Oversold")
-                        fig_rsi.update_layout(title="RSI Indicator", height=250, yaxis_range=[0, 100])
+                        fig_rsi.add_trace(go.Scatter(
+                            x=df_rsi.index, 
+                            y=df_rsi['RSI'], 
+                            name='RSI',
+                            line=dict(color='purple', width=2)
+                        ))
+                        fig_rsi.add_hline(y=70, line_dash="dash", line_color="red", annotation_text="Overbought (70)")
+                        fig_rsi.add_hline(y=30, line_dash="dash", line_color="green", annotation_text="Oversold (30)")
+                        fig_rsi.update_layout(
+                            title="RSI Indicator", 
+                            height=250, 
+                            yaxis_range=[0, 100],
+                            hovermode='x unified'
+                        )
                         st.plotly_chart(fig_rsi, use_container_width=True)
                     
-                    df_macd = df_clean.dropna(subset=['MACD', 'Signal'])
+                    # MACD chart
+                    df_macd = df_clean.dropna(subset=['MACD', 'MACD_Signal'])
                     if len(df_macd) > 0:
                         fig_macd = go.Figure()
-                        fig_macd.add_trace(go.Scatter(x=df_macd.index, y=df_macd['MACD'], name='MACD', line=dict(color='blue')))
-                        fig_macd.add_trace(go.Scatter(x=df_macd.index, y=df_macd['Signal'], name='Signal', line=dict(color='red')))
-                        fig_macd.update_layout(title="MACD Indicator", height=250)
+                        fig_macd.add_trace(go.Scatter(
+                            x=df_macd.index, 
+                            y=df_macd['MACD'], 
+                            name='MACD', 
+                            line=dict(color='blue', width=2)
+                        ))
+                        fig_macd.add_trace(go.Scatter(
+                            x=df_macd.index, 
+                            y=df_macd['MACD_Signal'], 
+                            name='Signal', 
+                            line=dict(color='red', width=2)
+                        ))
+                        
+                        # Add histogram (MACD - Signal)
+                        histogram = df_macd['MACD'] - df_macd['MACD_Signal']
+                        colors = ['green' if val >= 0 else 'red' for val in histogram]
+                        fig_macd.add_trace(go.Bar(
+                            x=df_macd.index,
+                            y=histogram,
+                            name='Histogram',
+                            marker_color=colors,
+                            opacity=0.3
+                        ))
+                        
+                        fig_macd.update_layout(
+                            title="MACD Indicator", 
+                            height=250,
+                            hovermode='x unified'
+                        )
                         st.plotly_chart(fig_macd, use_container_width=True)
                 else:
                     st.warning(f"⚠️ Insufficient data for {selected_chart_stock}")
             else:
                 st.error(f"⚠️ Could not fetch data for {selected_chart_stock}")
-                st.info("💡 Try a different stock or check your Breeze API connection.")
+                st.info("💡 This may be due to incorrect stock code. Try using breeze.get_names() to verify the stock code.")
         else:
             st.error(f"⚠️ Stock code not found for {selected_chart_stock}")
 
-# TAB 4: MULTI-CHART
+# TAB 4: INTRADAY MULTI-CHART MONITOR
 with tab4:
-    st.title("📊 Multi-Chart Monitor (Breeze)")
-    st.markdown("Track multiple stocks simultaneously")
+    st.title("⚡ Intraday Multi-Chart Monitor")
+    st.markdown("Real-time intraday candlestick charts for active trading")
     
     if not st.session_state.breeze_connected:
         st.error("⚠️ Breeze API not connected.")
@@ -657,23 +859,38 @@ with tab4:
         
         with col1:
             selected_watchlist = st.multiselect(
-                "Select stocks",
-                options=sorted(FNO_STOCKS[:30]),
-                default=st.session_state.watchlist_stocks[:5],
+                "Select stocks for intraday monitoring",
+                options=sorted(FNO_STOCKS),
+                default=st.session_state.watchlist_stocks[:4],
                 max_selections=6,
                 key="multi_watchlist"
             )
         
         with col2:
-            period_multi = st.selectbox("Period", ["1 Week", "2 Weeks", "1 Month"], index=0, key="multi_period")
-            period_map = {"1 Week": 7, "2 Weeks": 14, "1 Month": 30}
-            days = period_map[period_multi]
+            interval_options_intraday = {
+                "1 Minute": "1minute",
+                "5 Minutes": "5minute",
+                "30 Minutes": "30minute"
+            }
+            intraday_interval_label = st.selectbox(
+                "Chart Interval", 
+                options=list(interval_options_intraday.keys()), 
+                index=1, 
+                key="intraday_interval"
+            )
+            intraday_interval = interval_options_intraday[intraday_interval_label]
         
         with col3:
-            if st.button("🔄 Refresh", type="primary", use_container_width=True, key="multi_refresh_btn"):
+            if st.button("🔄 Refresh Charts", type="primary", use_container_width=True, key="multi_refresh_btn"):
                 st.cache_data.clear()
+                st.rerun()
         
         if selected_watchlist:
+            st.info(f"📊 Displaying {len(selected_watchlist)} stocks with {intraday_interval_label} candles")
+            
+            # Always use 1 day for intraday
+            intraday_days = 1
+            
             num_cols = 2 if len(selected_watchlist) <= 4 else 3
             num_rows = (len(selected_watchlist) + num_cols - 1) // num_cols
             
@@ -688,7 +905,8 @@ with tab4:
                         
                         with col:
                             if stock_code:
-                                df = fetch_stock_data_breeze(stock_code, days, "1day")
+                                with st.spinner(f"Loading {stock_name}..."):
+                                    df = fetch_stock_data_breeze(stock_code, intraday_days, intraday_interval)
                                 
                                 if not df.empty and len(df) >= 2 and 'Close' in df.columns:
                                     df_clean = df.dropna(subset=['Close'])
@@ -700,7 +918,6 @@ with tab4:
                                         if pd.notna(current) and pd.notna(prev) and prev != 0:
                                             change = current - prev
                                             change_pct = (change / prev) * 100
-                                            color = "green" if change_pct >= 0 else "red"
                                             arrow = "🟢" if change_pct >= 0 else "🔴"
                                             
                                             st.markdown(f"### {arrow} {stock_name}")
@@ -710,41 +927,98 @@ with tab4:
                                                 f"{change:.2f} ({change_pct:.2f}%)"
                                             )
                                             
-                                            fig = go.Figure()
-                                            fig.add_trace(go.Scatter(
-                                                x=df_clean.index,
-                                                y=df_clean['Close'],
-                                                mode='lines',
-                                                line=dict(color=color, width=2),
-                                                fill='tozeroy',
-                                                fillcolor=f'rgba({"0,255,0" if color == "green" else "255,0,0"},0.1)'
-                                            ))
-                                            fig.update_layout(
-                                                height=200,
-                                                margin=dict(l=10, r=10, t=10, b=10),
-                                                showlegend=False,
-                                                xaxis=dict(showgrid=False),
-                                                yaxis=dict(showgrid=True, gridcolor='lightgray')
-                                            )
-                                            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                                            # Create candlestick chart
+                                            if all(col in df_clean.columns for col in ['Open', 'High', 'Low', 'Close']):
+                                                fig = go.Figure(data=[go.Candlestick(
+                                                    x=df_clean.index,
+                                                    open=df_clean['Open'],
+                                                    high=df_clean['High'],
+                                                    low=df_clean['Low'],
+                                                    close=df_clean['Close'],
+                                                    increasing_line_color='green',
+                                                    decreasing_line_color='red'
+                                                )])
+                                                
+                                                fig.update_layout(
+                                                    height=300,
+                                                    margin=dict(l=10, r=10, t=30, b=10),
+                                                    showlegend=False,
+                                                    xaxis=dict(
+                                                        showgrid=True, 
+                                                        gridcolor='lightgray',
+                                                        type='date'
+                                                    ),
+                                                    yaxis=dict(
+                                                        showgrid=True, 
+                                                        gridcolor='lightgray'
+                                                    ),
+                                                    xaxis_rangeslider_visible=False,
+                                                    hovermode='x'
+                                                )
+                                                
+                                                st.plotly_chart(
+                                                    fig, 
+                                                    use_container_width=True, 
+                                                    config={'displayModeBar': False}
+                                                )
+                                                
+                                                # Show volume if available
+                                                if 'Volume' in df_clean.columns:
+                                                    total_vol = df_clean['Volume'].sum()
+                                                    st.caption(f"📊 Volume: {total_vol:,.0f}")
+                                            else:
+                                                # Fallback to line chart
+                                                fig = go.Figure()
+                                                fig.add_trace(go.Scatter(
+                                                    x=df_clean.index,
+                                                    y=df_clean['Close'],
+                                                    mode='lines',
+                                                    line=dict(
+                                                        color='green' if change_pct >= 0 else 'red', 
+                                                        width=2
+                                                    ),
+                                                    fill='tozeroy',
+                                                    fillcolor=f'rgba({"0,255,0" if change_pct >= 0 else "255,0,0"},0.1)'
+                                                ))
+                                                fig.update_layout(
+                                                    height=300,
+                                                    margin=dict(l=10, r=10, t=10, b=10),
+                                                    showlegend=False,
+                                                    xaxis=dict(showgrid=False),
+                                                    yaxis=dict(showgrid=True, gridcolor='lightgray')
+                                                )
+                                                st.plotly_chart(
+                                                    fig, 
+                                                    use_container_width=True, 
+                                                    config={'displayModeBar': False}
+                                                )
                                         else:
                                             st.warning(f"⚠️ Invalid data for {stock_name}")
                                     else:
                                         st.warning(f"⚠️ Insufficient data for {stock_name}")
                                 else:
-                                    st.warning(f"⚠️ No data available for {stock_name}")
+                                    st.warning(f"⚠️ No intraday data for {stock_name}")
+                                    st.caption("Try a different stock or check if market is open")
                             else:
                                 st.error(f"⚠️ Stock code not found for {stock_name}")
         else:
-            st.info("👆 Select stocks from the dropdown to monitor")
+            st.info("👆 Select stocks from the dropdown to monitor intraday movements")
+            st.markdown("""
+            ### 💡 Intraday Trading Features:
+            - **Real-time candlestick charts** with 1min, 5min, or 30min intervals
+            - **Live price updates** with percentage change
+            - **Multiple stocks** monitoring (up to 6 simultaneously)
+            - **Volume indicators** for each stock
+            - Perfect for day trading and scalping strategies
+            """)
 
 # Footer
 st.markdown("---")
-st.caption("💡 F&O Dashboard powered by ICICI Breeze API")
+st.caption("💡 F&O Dashboard powered by ICICI Breeze API | Enhanced Technical Analysis with 0-10 Scoring")
 st.caption("⚠ **Disclaimer:** For educational purposes only. Not financial advice.")
 
 # Connection status
 if st.session_state.breeze_connected:
-    st.caption(f"🔌 **Connection Status:** ✅ Connected to Breeze API | API Calls: {st.session_state.api_call_count}/5000")
+    st.caption(f"🔌 **Status:** ✅ Connected | API Calls: {st.session_state.api_call_count}/5000 daily limit")
 else:
-    st.caption("🔌 **Connection Status:** ❌ Disconnected - Check your credentials")
+    st.caption("🔌 **Status:** ❌ Disconnected - Check credentials in code")

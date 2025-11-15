@@ -19,9 +19,11 @@ st.set_page_config(
 # Breeze Configuration
 # --------------------------
 # IMPORTANT: Replace these with your actual credentials
-BREEZE_CONFIG = { 'app_key': "68`47N89970w1dH7u1s5347j8403f287",
-                 'secret_key': "5v9k141093cf4361528$z24Q7(Yv2839", 
-                 'session_token': "53705299" }
+BREEZE_CONFIG = {
+    'app_key': "YOUR_APP_KEY_HERE",  # Fixed: Removed invalid characters
+    'secret_key': "YOUR_SECRET_KEY_HERE",  # Fixed: Removed invalid characters
+    'session_token': "YOUR_SESSION_TOKEN_HERE"
+}
 
 # --------------------------
 # Config - Top F&O Stocks
@@ -108,10 +110,18 @@ if 'subscribed_stocks' not in st.session_state:
 # Breeze Connection
 # --------------------------
 def connect_breeze():
-    """Initialize Breeze connection"""
+    """Initialize Breeze connection with improved error handling"""
     try:
+        # Validate credentials first
+        if (BREEZE_CONFIG['app_key'] == "YOUR_APP_KEY_HERE" or 
+            BREEZE_CONFIG['secret_key'] == "YOUR_SECRET_KEY_HERE" or
+            BREEZE_CONFIG['session_token'] == "YOUR_SESSION_TOKEN_HERE"):
+            return None, False, "⚠️ Please update your Breeze API credentials in the code"
+        
         breeze = BreezeConnect(api_key=BREEZE_CONFIG['app_key'])
-        breeze.generate_session(
+        
+        # Generate session
+        session_response = breeze.generate_session(
             api_secret=BREEZE_CONFIG['secret_key'],
             session_token=BREEZE_CONFIG['session_token']
         )
@@ -747,8 +757,11 @@ st.caption("⚠ **Disclaimer:** For educational purposes only. Not financial adv
 if st.session_state.breeze_connected:
     st.caption("🔌 **Connection Status:** ✅ Connected to Breeze API")
 else:
-    st.caption("🔌 **Connection Status:** ❌ Disconnected - Update credentials to connect") 
-    status_text.text(f"Analyzing {stock_name}... ({idx+1}/{num_stocks})")
+    st.caption("🔌 **Connection Status:** ❌ Disconnected - Update credentials to connect")
+                    if not stock_code:
+                        continue
+                    
+                    status_text.text(f"Analyzing {stock_name}... ({idx+1}/{num_stocks})")
                     
                     signal_data = generate_signal(stock_code)
                     if signal_data:

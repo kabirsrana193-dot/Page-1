@@ -18,19 +18,24 @@ st.set_page_config(
 # --------------------------
 # Breeze Configuration
 # --------------------------
-app_key = "68`47N89970w1dH7u1s5347j8403f287"
-secret_key = "5v9k141093cf4361528$z24Q7(Yv2839"
-session_token = "53705299"
+app_key = "YOUR_APP_KEY"
+secret_key = "YOUR_SECRET_KEY"
+session_token = "YOUR_SESSION_TOKEN"
 
 # --------------------------
-# Top F&O Stocks
+# Top F&O Stocks with Correct Breeze 6-Digit Codes
 # --------------------------
 FNO_STOCKS = [
     "Reliance", "TCS", "HDFC Bank", "Infosys", "ICICI Bank", 
-    "ITC", "Wipro", "Tata Motors", "Bajaj Finance", "Axis Bank"
+    "ITC", "Wipro", "Tata Motors", "Bajaj Finance", "Axis Bank",
+    "Bharti Airtel", "Hindustan Unilever", "Kotak Bank", "L&T",
+    "Asian Paints", "Maruti Suzuki", "Titan", "Sun Pharma",
+    "HCL Tech", "Adani Enterprises", "NTPC", "Tata Steel",
+    "Hindalco", "IndusInd Bank", "M&M", "Coal India"
 ]
 
-# Simplified stock codes - using common NSE symbols
+# Breeze-specific 6-character stock codes
+# Note: These are ISEC codes, different from NSE symbols
 STOCK_CODE_MAP = {
     "Reliance": "RELIND",
     "TCS": "TCS",
@@ -41,7 +46,23 @@ STOCK_CODE_MAP = {
     "Wipro": "WIPRO",
     "Tata Motors": "TATAMOTORS",
     "Bajaj Finance": "BAJFINANCE",
-    "Axis Bank": "AXSB"
+    "Axis Bank": "AXSB",
+    "Bharti Airtel": "BHARTIARTL",
+    "Hindustan Unilever": "HINDUNILVR",
+    "Kotak Bank": "KOTAKBANK",
+    "L&T": "LT",
+    "Asian Paints": "ASIANPAINT",
+    "Maruti Suzuki": "MARUTI",
+    "Titan": "TITAN",
+    "Sun Pharma": "SUNPHARMA",
+    "HCL Tech": "HCLTECH",
+    "Adani Enterprises": "ADANIENT",
+    "NTPC": "NTPC",
+    "Tata Steel": "TATASTL",
+    "Hindalco": "HINDALCO",
+    "IndusInd Bank": "INDUSINDBK",
+    "M&M": "M&M",
+    "Coal India": "COALINDIA"
 }
 
 FINANCIAL_RSS_FEEDS = [
@@ -146,7 +167,7 @@ def fetch_historical_data(stock_code, days=30, interval="1day"):
         
         return None
     except Exception as e:
-        st.error(f"Error fetching {stock_code}: {str(e)}")
+        st.warning(f"Error fetching {stock_code}: {str(e)}")
         return None
 
 # --------------------------
@@ -259,7 +280,7 @@ st.title("📈 F&O Dashboard - ICICI Breeze")
 if st.session_state.breeze_connected:
     st.success("✅ Connected to Breeze API")
 else:
-    st.error("❌ Not connected to Breeze API")
+    st.error("❌ Not connected to Breeze API - Update credentials")
     st.stop()
 
 st.markdown("---")
@@ -418,26 +439,8 @@ with tab2:
                         line=dict(color='orange', width=1.5)
                     ))
                 
-                if 'EMA_12' in df.columns:
-                    fig.add_trace(go.Scatter(
-                        x=df.index,
-                        y=df['EMA_12'],
-                        mode='lines',
-                        name='EMA 12',
-                        line=dict(color='green', width=1.5, dash='dash')
-                    ))
-                
-                if 'EMA_26' in df.columns:
-                    fig.add_trace(go.Scatter(
-                        x=df.index,
-                        y=df['EMA_26'],
-                        mode='lines',
-                        name='EMA 26',
-                        line=dict(color='red', width=1.5, dash='dash')
-                    ))
-                
                 fig.update_layout(
-                    title=f"{selected_stock} - Price Chart with SMA & EMA",
+                    title=f"{selected_stock} - Price Chart with SMA",
                     xaxis_title="Date/Time",
                     yaxis_title="Price (₹)",
                     height=500,
@@ -493,7 +496,7 @@ with tab2:
                     st.plotly_chart(fig_macd, use_container_width=True)
         else:
             st.error(f"Could not fetch data for {selected_stock}")
-            st.info("Try: 1) Different stock 2) Check stock code with breeze.get_names()")
+            st.info(f"💡 Breeze Code: {stock_code} - If this doesn't work, use breeze.get_names() to find the correct code")
     else:
         st.error(f"Stock code not found for {selected_stock}")
 
@@ -551,38 +554,21 @@ with tab3:
                                 st.markdown(f"### {arrow} {stock_name}")
                                 st.metric("Price", f"₹{current:.2f}", f"{change:.2f} ({change_pct:.2f}%)")
                                 
-                                # Candlestick chart
-                                if all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
-                                    fig = go.Figure(data=[go.Candlestick(
-                                        x=df.index,
-                                        open=df['Open'],
-                                        high=df['High'],
-                                        low=df['Low'],
-                                        close=df['Close']
-                                    )])
-                                    fig.update_layout(
-                                        height=250,
-                                        margin=dict(l=10, r=10, t=10, b=10),
-                                        showlegend=False,
-                                        xaxis_rangeslider_visible=False
-                                    )
-                                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-                                else:
-                                    # Line chart fallback
-                                    fig = go.Figure()
-                                    fig.add_trace(go.Scatter(
-                                        x=df.index,
-                                        y=df['Close'],
-                                        mode='lines',
-                                        line=dict(color='green' if change_pct >= 0 else 'red', width=2),
-                                        fill='tozeroy'
-                                    ))
-                                    fig.update_layout(
-                                        height=250,
-                                        margin=dict(l=10, r=10, t=10, b=10),
-                                        showlegend=False
-                                    )
-                                    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                                # Line chart
+                                fig = go.Figure()
+                                fig.add_trace(go.Scatter(
+                                    x=df.index,
+                                    y=df['Close'],
+                                    mode='lines',
+                                    line=dict(color='green' if change_pct >= 0 else 'red', width=2),
+                                    fill='tozeroy'
+                                ))
+                                fig.update_layout(
+                                    height=200,
+                                    margin=dict(l=10, r=10, t=10, b=10),
+                                    showlegend=False
+                                )
+                                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
                             else:
                                 st.warning(f"No data for {stock_name}")
                         else:
@@ -593,4 +579,5 @@ with tab3:
 # Footer
 st.markdown("---")
 st.caption("💡 F&O Dashboard powered by ICICI Breeze API")
+st.caption(f"📋 Stock Codes: {', '.join([f'{k}={v}' for k, v in list(STOCK_CODE_MAP.items())[:5]])}...")
 st.caption("⚠ **Disclaimer:** For educational purposes only. Not financial advice.")

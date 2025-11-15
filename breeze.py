@@ -151,11 +151,13 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
         if not breeze:
             return pd.DataFrame()
         
-        subscribe_to_stock(breeze, stock_code)
+        # Don't subscribe for historical data - only needed for websockets
+        # subscribe_to_stock(breeze, stock_code)
         
         to_date = datetime.now()
         from_date = to_date - timedelta(days=days)
         
+        # Breeze API requires specific date format with UTC timezone
         from_date_str = from_date.strftime("%Y-%m-%d") + "T07:00:00.000Z"
         to_date_str = to_date.strftime("%Y-%m-%d") + "T23:59:59.000Z"
         
@@ -167,6 +169,9 @@ def fetch_stock_data_breeze(stock_code, days=90, interval="1day"):
             exchange_code="NSE",
             product_type="cash"
         )
+        
+        # Add a small delay to avoid rate limiting (100 calls/min = 0.6s between calls)
+        time.sleep(0.7)
         
         if response and 'Success' in response:
             data = response['Success']

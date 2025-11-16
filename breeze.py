@@ -785,7 +785,7 @@ with tab2:
         fig_bb.add_trace(go.Scatter(
             x=x_data, y=df_plot['close'],
             name='Close Price',
-            line=dict(color='#000000', width=2),
+            line=dict(color='#FFC107', width=2),
             mode='lines'
         ))
         
@@ -826,29 +826,41 @@ with tab2:
         ))
         
         # Supertrend line with color based on direction
-        # Buy signal (green)
-        buy_signal = df_plot[df_plot['ST_direction'] == 1]
-        if not buy_signal.empty:
-            buy_x = [x_data[i] for i in buy_signal.index if i < len(x_data)]
-            fig_st.add_trace(go.Scatter(
-                x=buy_x,
-                y=buy_signal['Supertrend'],
-                name='Buy Signal',
-                line=dict(color='#4CAF50', width=2),
-                mode='lines'
-            ))
-        
-        # Sell signal (red)
-        sell_signal = df_plot[df_plot['ST_direction'] == -1]
-        if not sell_signal.empty:
-            sell_x = [x_data[i] for i in sell_signal.index if i < len(x_data)]
-            fig_st.add_trace(go.Scatter(
-                x=sell_x,
-                y=sell_signal['Supertrend'],
-                name='Sell Signal',
-                line=dict(color='#ef5350', width=2),
-                mode='lines'
-            ))
+        # Buy signal (green) - continuous segments
+        if 'ST_direction' in df_plot.columns:
+            for i in range(len(df_plot)):
+                if pd.notna(df_plot['ST_direction'].iloc[i]) and df_plot['ST_direction'].iloc[i] == 1:
+                    # Find continuous green segment
+                    start_idx = i
+                    while i < len(df_plot) and pd.notna(df_plot['ST_direction'].iloc[i]) and df_plot['ST_direction'].iloc[i] == 1:
+                        i += 1
+                    end_idx = i
+                    
+                    # Plot green segment
+                    fig_st.add_trace(go.Scatter(
+                        x=x_data[start_idx:end_idx],
+                        y=df_plot['Supertrend'].iloc[start_idx:end_idx],
+                        name='Buy Signal',
+                        line=dict(color='#4CAF50', width=2),
+                        mode='lines',
+                        showlegend=(start_idx == 0)
+                    ))
+                elif pd.notna(df_plot['ST_direction'].iloc[i]) and df_plot['ST_direction'].iloc[i] == -1:
+                    # Find continuous red segment
+                    start_idx = i
+                    while i < len(df_plot) and pd.notna(df_plot['ST_direction'].iloc[i]) and df_plot['ST_direction'].iloc[i] == -1:
+                        i += 1
+                    end_idx = i
+                    
+                    # Plot red segment
+                    fig_st.add_trace(go.Scatter(
+                        x=x_data[start_idx:end_idx],
+                        y=df_plot['Supertrend'].iloc[start_idx:end_idx],
+                        name='Sell Signal',
+                        line=dict(color='#ef5350', width=2),
+                        mode='lines',
+                        showlegend=(start_idx == 0)
+                    ))
         
         fig_st.update_layout(
             title="Supertrend Indicator",

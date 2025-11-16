@@ -530,21 +530,46 @@ with tab2:
         
         st.markdown("---")
         
-        # 1. CANDLESTICK CHART - FIXED DATE LABELS
-        st.subheader(f"📊 {selected_stock} - Price Chart")
+        # 1. CANDLESTICK CHART - NO GAPS, CLEAN LABELS
+        st.subheader(f"📊 {selected_stock} - Price Chart (Market Hours Only)")
+        
+        # Format datetime index as strings to remove gaps
+        if interval != 'day':
+            df_plot = df.copy()
+            df_plot.index = df_plot.index.strftime('%d %b %H:%M')
+            x_data = df_plot.index
+            xaxis_type = 'category'
+            tickformat = None
+        else:
+            df_plot = df.copy()
+            x_data = df.index
+            xaxis_type = 'date'
+            tickformat = '%d %b %Y'
         
         fig_candle = go.Figure()
         
         fig_candle.add_trace(go.Candlestick(
-            x=df.index,
-            open=df['open'],
-            high=df['high'],
-            low=df['low'],
-            close=df['close'],
+            x=x_data,
+            open=df_plot['open'],
+            high=df_plot['high'],
+            low=df_plot['low'],
+            close=df_plot['close'],
             name='Price',
             increasing_line_color='#26a69a',
             decreasing_line_color='#ef5350'
         ))
+        
+        # Format datetime index as strings to remove gaps
+        if interval != 'day':
+            df_plot = df.copy()
+            df_plot.index = df_plot.index.strftime('%d %b %H:%M')
+            x_data = df_plot.index
+            xaxis_type = 'category'
+            tickformat = None
+        else:
+            x_data = df.index
+            xaxis_type = 'date'
+            tickformat = '%d %b %Y'
         
         fig_candle.update_layout(
             title=f"{selected_stock} - {interval.upper()} Chart",
@@ -554,8 +579,8 @@ with tab2:
             xaxis_rangeslider_visible=False,
             hovermode='x unified',
             xaxis=dict(
-                type='date',
-                tickformat='%d %b<br>%H:%M' if interval != 'day' else '%d %b %Y',
+                type=xaxis_type,
+                tickformat=tickformat,
                 tickangle=-45,
                 nticks=15,
                 showgrid=True,
@@ -569,34 +594,34 @@ with tab2:
         
         st.plotly_chart(fig_candle, use_container_width=True)
         
-        # 2. EMA CHART - FIXED DATE LABELS
+        # 2. EMA CHART - NO GAPS, CLEAN LABELS
         st.subheader("📈 Exponential Moving Averages (EMA 9, 21, 50)")
         
         fig_ema = go.Figure()
         
         fig_ema.add_trace(go.Scatter(
-            x=df.index, y=df['close'],
+            x=x_data, y=df_plot['close'],
             name='Close Price',
             line=dict(color='#2196F3', width=2),
             mode='lines'
         ))
         
         fig_ema.add_trace(go.Scatter(
-            x=df.index, y=df['EMA_9'],
+            x=x_data, y=df_plot['EMA_9'],
             name='EMA 9',
             line=dict(color='#4CAF50', width=1.5, dash='solid'),
             mode='lines'
         ))
         
         fig_ema.add_trace(go.Scatter(
-            x=df.index, y=df['EMA_21'],
+            x=x_data, y=df_plot['EMA_21'],
             name='EMA 21',
             line=dict(color='#FF9800', width=1.5, dash='solid'),
             mode='lines'
         ))
         
         fig_ema.add_trace(go.Scatter(
-            x=df.index, y=df['EMA_50'],
+            x=x_data, y=df_plot['EMA_50'],
             name='EMA 50',
             line=dict(color='#9C27B0', width=1.5, dash='solid'),
             mode='lines'
@@ -610,8 +635,8 @@ with tab2:
             hovermode='x unified',
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             xaxis=dict(
-                type='date',
-                tickformat='%d %b<br>%H:%M' if interval != 'day' else '%d %b %Y',
+                type=xaxis_type,
+                tickformat=tickformat,
                 tickangle=-45,
                 nticks=15
             ),
@@ -620,36 +645,36 @@ with tab2:
         
         st.plotly_chart(fig_ema, use_container_width=True)
         
-        # 3. SMA CHART - FIXED DATE LABELS
+        # 3. SMA CHART - NO GAPS, CLEAN LABELS
         st.subheader("📉 Simple Moving Averages (SMA 20, 50, 200)")
         
         fig_sma = go.Figure()
         
         fig_sma.add_trace(go.Scatter(
-            x=df.index, y=df['close'],
+            x=x_data, y=df_plot['close'],
             name='Close Price',
             line=dict(color='#2196F3', width=2),
             mode='lines'
         ))
         
         fig_sma.add_trace(go.Scatter(
-            x=df.index, y=df['SMA_20'],
+            x=x_data, y=df_plot['SMA_20'],
             name='SMA 20',
             line=dict(color='#FF5722', width=1.5, dash='dash'),
             mode='lines'
         ))
         
         fig_sma.add_trace(go.Scatter(
-            x=df.index, y=df['SMA_50'],
+            x=x_data, y=df_plot['SMA_50'],
             name='SMA 50',
             line=dict(color='#FFC107', width=1.5, dash='dash'),
             mode='lines'
         ))
         
         # Only show SMA 200 if we have enough data
-        if len(df) >= 200:
+        if len(df_plot) >= 200:
             fig_sma.add_trace(go.Scatter(
-                x=df.index, y=df['SMA_200'],
+                x=x_data, y=df_plot['SMA_200'],
                 name='SMA 200',
                 line=dict(color='#795548', width=2, dash='dash'),
                 mode='lines'
@@ -663,8 +688,8 @@ with tab2:
             hovermode='x unified',
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             xaxis=dict(
-                type='date',
-                tickformat='%d %b<br>%H:%M' if interval != 'day' else '%d %b %Y',
+                type=xaxis_type,
+                tickformat=tickformat,
                 tickangle=-45,
                 nticks=15
             ),
@@ -673,13 +698,13 @@ with tab2:
         
         st.plotly_chart(fig_sma, use_container_width=True)
         
-        # 4. RSI - FIXED DATE LABELS
+        # 4. RSI - NO GAPS, CLEAN LABELS
         st.subheader("📊 RSI (Relative Strength Index)")
         
         fig_rsi = go.Figure()
         
         fig_rsi.add_trace(go.Scatter(
-            x=df.index, y=df['RSI'],
+            x=x_data, y=df_plot['RSI'],
             name='RSI',
             line=dict(color='#9C27B0', width=2),
             fill='tozeroy',
@@ -700,8 +725,8 @@ with tab2:
             height=300,
             hovermode='x unified',
             xaxis=dict(
-                type='date',
-                tickformat='%d %b<br>%H:%M' if interval != 'day' else '%d %b %Y',
+                type=xaxis_type,
+                tickformat=tickformat,
                 tickangle=-45,
                 nticks=12
             ),
@@ -710,27 +735,27 @@ with tab2:
         
         st.plotly_chart(fig_rsi, use_container_width=True)
         
-        # 5. MACD - FIXED DATE LABELS
+        # 5. MACD - NO GAPS, CLEAN LABELS
         st.subheader("📈 MACD (Moving Average Convergence Divergence)")
         
         fig_macd = go.Figure()
         
         fig_macd.add_trace(go.Scatter(
-            x=df.index, y=df['MACD'],
+            x=x_data, y=df_plot['MACD'],
             name='MACD',
             line=dict(color='#2196F3', width=2)
         ))
         
         fig_macd.add_trace(go.Scatter(
-            x=df.index, y=df['MACD_signal'],
+            x=x_data, y=df_plot['MACD_signal'],
             name='Signal',
             line=dict(color='#FF5722', width=2)
         ))
         
         # Histogram
-        colors = ['#26a69a' if val >= 0 else '#ef5350' for val in df['MACD_hist']]
+        colors = ['#26a69a' if val >= 0 else '#ef5350' for val in df_plot['MACD_hist']]
         fig_macd.add_trace(go.Bar(
-            x=df.index, y=df['MACD_hist'],
+            x=x_data, y=df_plot['MACD_hist'],
             name='Histogram',
             marker_color=colors,
             opacity=0.5
@@ -743,8 +768,8 @@ with tab2:
             height=300,
             hovermode='x unified',
             xaxis=dict(
-                type='date',
-                tickformat='%d %b<br>%H:%M' if interval != 'day' else '%d %b %Y',
+                type=xaxis_type,
+                tickformat=tickformat,
                 tickangle=-45,
                 nticks=12
             ),

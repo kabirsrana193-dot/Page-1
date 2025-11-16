@@ -752,7 +752,7 @@ with tab2:
         
         st.plotly_chart(fig_sma, use_container_width=True)
         
-        # 2. BOLLINGER BANDS
+        # 4. BOLLINGER BANDS
         st.subheader("📊 Bollinger Bands (20, 2)")
         
         fig_bb = go.Figure()
@@ -761,8 +761,7 @@ with tab2:
             x=x_data, y=df_plot['BB_upper'],
             name='Upper Band',
             line=dict(color='#FF5722', width=1, dash='dash'),
-            mode='lines',
-            visible=True
+            mode='lines'
         ))
         
         fig_bb.add_trace(go.Scatter(
@@ -771,8 +770,7 @@ with tab2:
             line=dict(color='#2196F3', width=1.5),
             mode='lines',
             fill='tonexty',
-            fillcolor='rgba(255, 87, 34, 0.1)',
-            visible=True
+            fillcolor='rgba(255, 87, 34, 0.1)'
         ))
         
         fig_bb.add_trace(go.Scatter(
@@ -781,16 +779,14 @@ with tab2:
             line=dict(color='#4CAF50', width=1, dash='dash'),
             mode='lines',
             fill='tonexty',
-            fillcolor='rgba(76, 175, 80, 0.1)',
-            visible=True
+            fillcolor='rgba(76, 175, 80, 0.1)'
         ))
         
         fig_bb.add_trace(go.Scatter(
             x=x_data, y=df_plot['close'],
             name='Close Price',
             line=dict(color='#FFC107', width=2),
-            mode='lines',
-            visible=True
+            mode='lines'
         ))
         
         fig_bb.update_layout(
@@ -799,16 +795,7 @@ with tab2:
             xaxis_title="Time (IST)",
             height=450,
             hovermode='x unified',
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1,
-                bgcolor="rgba(255, 255, 255, 0.8)",
-                bordercolor="gray",
-                borderwidth=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             xaxis=dict(
                 type=xaxis_type,
                 tickformat=tickformat,
@@ -819,9 +806,8 @@ with tab2:
         )
         
         st.plotly_chart(fig_bb, use_container_width=True)
-        st.info("💡 **Tip:** Click legend items to show/hide bands. Price touching upper band = potential resistance, lower band = potential support.")
         
-        # 3. SUPERTREND
+        # 5. SUPERTREND
         st.subheader("🎯 Supertrend (10, 3)")
         
         fig_st = go.Figure()
@@ -895,7 +881,7 @@ with tab2:
         
         st.plotly_chart(fig_st, use_container_width=True)
         
-        # 4. RSI - NO GAPS, CLEAN LABELS
+        # 6. RSI - NO GAPS, CLEAN LABELS
         st.subheader("📊 RSI (Relative Strength Index)")
         
         fig_rsi = go.Figure()
@@ -905,8 +891,7 @@ with tab2:
             name='RSI',
             line=dict(color='#9C27B0', width=2),
             fill='tozeroy',
-            fillcolor='rgba(156, 39, 176, 0.1)',
-            visible=True
+            fillcolor='rgba(156, 39, 176, 0.1)'
         ))
         
         fig_rsi.add_hline(y=70, line_dash="dash", line_color="red", 
@@ -922,13 +907,6 @@ with tab2:
             xaxis_title="Time (IST)",
             height=300,
             hovermode='x unified',
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            ),
             xaxis=dict(
                 type=xaxis_type,
                 tickformat=tickformat,
@@ -940,7 +918,7 @@ with tab2:
         
         st.plotly_chart(fig_rsi, use_container_width=True)
         
-        # 5. MACD - NO GAPS, CLEAN LABELS
+        # 7. MACD - NO GAPS, CLEAN LABELS
         st.subheader("📈 MACD (Moving Average Convergence Divergence)")
         
         fig_macd = go.Figure()

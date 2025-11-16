@@ -26,21 +26,10 @@ st.set_page_config(
 # NOTE: In production, use st.secrets instead of hardcoding
 # For now, update these values in Streamlit secrets or environment variables
 
-if 'api_key' not in st.secrets:
-    st.error("⚠️ Please set up your Kite API credentials in Streamlit secrets")
-    st.info("""
-    Create a `.streamlit/secrets.toml` file with:
-    ```
-    api_key = "your_api_key"
-    access_token = "your_access_token"
-    ```
-    
-    Update access_token daily after login!
-    """)
-    st.stop()
 
-API_KEY = st.secrets["aj0gv6rpjm11ecac"]
-ACCESS_TOKEN = st.secrets["SmCnbRkg9WhWv7FnF3cXpjEGBJkWqihw"]
+
+API_KEY = "aj0gv6rpjm11ecac"
+ACCESS_TOKEN = "SmCnbRkg9WhWv7FnF3cXpjEGBJkWqihw"
 
 # --------------------------
 # FNO Stocks List

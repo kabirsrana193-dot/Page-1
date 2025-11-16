@@ -2,6 +2,7 @@
 Kite Connect F&O Trading Dashboard with WebSocket Live Streaming
 Real-time tick data using KiteTicker
 FIXED: Clean date labels without overlapping
+UPDATED: EMA and SMA shown on candlestick chart
 """
 
 import streamlit as st
@@ -514,7 +515,7 @@ with tab1:
             st.caption(f"Source: {article['Source']} | {article['Published']}")
             st.markdown("---")
 
-# TAB 2: CHARTS - FIXED DATE LABELS
+# TAB 2: CHARTS - COMBINED MA CHART
 with tab2:
     st.header("Stock Charts with Technical Indicators")
     st.caption("📊 EMA: 9, 21, 50 | SMA: 20, 50, 200 | BB: 20,2 | Supertrend: 10,3 | Market Hours: 9:15 AM - 3:30 PM IST")
@@ -584,8 +585,8 @@ with tab2:
         
         st.markdown("---")
         
-        # 1. CANDLESTICK CHART - NO GAPS, CLEAN LABELS
-        st.subheader(f"📊 {selected_stock} - Price Chart (Market Hours Only)")
+        # 1. CANDLESTICK CHART WITH EMA & SMA - BIGGER SIZE
+        st.subheader(f"📊 {selected_stock} - Price Chart with Moving Averages")
         
         # Format datetime index as strings to remove gaps
         if interval != 'day':
@@ -602,6 +603,7 @@ with tab2:
         
         fig_candle = go.Figure()
         
+        # Candlesticks
         fig_candle.add_trace(go.Candlestick(
             x=x_data,
             open=df_plot['open'],
@@ -613,25 +615,69 @@ with tab2:
             decreasing_line_color='#ef5350'
         ))
         
-        # Format datetime index as strings to remove gaps
-        if interval != 'day':
-            df_plot = df.copy()
-            df_plot.index = df_plot.index.strftime('%d %b %H:%M')
-            x_data = df_plot.index
-            xaxis_type = 'category'
-            tickformat = None
-        else:
-            x_data = df.index
-            xaxis_type = 'date'
-            tickformat = '%d %b %Y'
+        # EMA Lines
+        fig_candle.add_trace(go.Scatter(
+            x=x_data, y=df_plot['EMA_9'],
+            name='EMA 9',
+            line=dict(color='#4CAF50', width=1.5),
+            mode='lines'
+        ))
+        
+        fig_candle.add_trace(go.Scatter(
+            x=x_data, y=df_plot['EMA_21'],
+            name='EMA 21',
+            line=dict(color='#FF9800', width=1.5),
+            mode='lines'
+        ))
+        
+        fig_candle.add_trace(go.Scatter(
+            x=x_data, y=df_plot['EMA_50'],
+            name='EMA 50',
+            line=dict(color='#9C27B0', width=1.5),
+            mode='lines'
+        ))
+        
+        # SMA Lines
+        fig_candle.add_trace(go.Scatter(
+            x=x_data, y=df_plot['SMA_20'],
+            name='SMA 20',
+            line=dict(color='#FF5722', width=1.5, dash='dash'),
+            mode='lines'
+        ))
+        
+        fig_candle.add_trace(go.Scatter(
+            x=x_data, y=df_plot['SMA_50'],
+            name='SMA 50',
+            line=dict(color='#FFC107', width=1.5, dash='dash'),
+            mode='lines'
+        ))
+        
+        # Only show SMA 200 if we have enough data
+        if len(df_plot) >= 200:
+            fig_candle.add_trace(go.Scatter(
+                x=x_data, y=df_plot['SMA_200'],
+                name='SMA 200',
+                line=dict(color='#795548', width=2, dash='dash'),
+                mode='lines'
+            ))
         
         fig_candle.update_layout(
-            title=f"{selected_stock} - {interval.upper()} Chart",
+            title=f"{selected_stock} - {interval.upper()} Chart with Moving Averages",
             yaxis_title="Price (₹)",
             xaxis_title="Time (IST)",
-            height=500,
+            height=650,
             xaxis_rangeslider_visible=False,
             hovermode='x unified',
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1,
+                bgcolor="rgba(255, 255, 255, 0.8)",
+                bordercolor="gray",
+                borderwidth=1
+            ),
             xaxis=dict(
                 type=xaxis_type,
                 tickformat=tickformat,
@@ -647,143 +693,12 @@ with tab2:
         )
         
         st.plotly_chart(fig_candle, use_container_width=True)
-        
-        # 2. EMA CHART - NO GAPS, CLEAN LABELS
-        st.subheader("📈 Exponential Moving Averages (EMA 9, 21, 50)")
-        
-        fig_ema = go.Figure()
-        
-        fig_ema.add_trace(go.Scatter(
-            x=x_data, y=df_plot['close'],
-            name='Close Price',
-            line=dict(color='#2196F3', width=2),
-            mode='lines'
-        ))
-        
-        fig_ema.add_trace(go.Scatter(
-            x=x_data, y=df_plot['EMA_9'],
-            name='EMA 9',
-            line=dict(color='#4CAF50', width=1.5, dash='solid'),
-            mode='lines'
-        ))
-        
-        fig_ema.add_trace(go.Scatter(
-            x=x_data, y=df_plot['EMA_21'],
-            name='EMA 21',
-            line=dict(color='#FF9800', width=1.5, dash='solid'),
-            mode='lines'
-        ))
-        
-        fig_ema.add_trace(go.Scatter(
-            x=x_data, y=df_plot['EMA_50'],
-            name='EMA 50',
-            line=dict(color='#9C27B0', width=1.5, dash='solid'),
-            mode='lines'
-        ))
-        
-        fig_ema.update_layout(
-            title="EMA Analysis",
-            yaxis_title="Price (₹)",
-            xaxis_title="Time (IST)",
-            height=450,
-            hovermode='x unified',
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            xaxis=dict(
-                type=xaxis_type,
-                tickformat=tickformat,
-                tickangle=-45,
-                nticks=15
-            ),
-            yaxis=dict(showgrid=True, gridcolor='rgba(128,128,128,0.2)')
-        )
-        
-        st.plotly_chart(fig_ema, use_container_width=True)
-        
-        # 3. SMA CHART - NO GAPS, CLEAN LABELS
-        st.subheader("📉 Simple Moving Averages (SMA 20, 50, 200)")
-        
-        fig_sma = go.Figure()
-        
-        fig_sma.add_trace(go.Scatter(
-            x=x_data, y=df_plot['close'],
-            name='Close Price',
-            line=dict(color='#2196F3', width=2),
-            mode='lines'
-        ))
-        
-        fig_sma.add_trace(go.Scatter(
-            x=x_data, y=df_plot['SMA_20'],
-            name='SMA 20',
-            line=dict(color='#FF5722', width=1.5, dash='dash'),
-            mode='lines'
-        ))
-        
-        fig_sma.add_trace(go.Scatter(
-            x=x_data, y=df_plot['SMA_50'],
-            name='SMA 50',
-            line=dict(color='#FFC107', width=1.5, dash='dash'),
-            mode='lines'
-        ))
-        
-        # Only show SMA 200 if we have enough data
-        if len(df_plot) >= 200:
-            fig_sma.add_trace(go.Scatter(
-                x=x_data, y=df_plot['SMA_200'],
-                name='SMA 200',
-                line=dict(color='#795548', width=2, dash='dash'),
-                mode='lines'
-            ))
-        
-        fig_sma.update_layout(
-            title="SMA Analysis",
-            yaxis_title="Price (₹)",
-            xaxis_title="Time (IST)",
-            height=450,
-            hovermode='x unified',
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-            xaxis=dict(
-                type=xaxis_type,
-                tickformat=tickformat,
-                tickangle=-45,
-                nticks=15
-            ),
-            yaxis=dict(showgrid=True, gridcolor='rgba(128,128,128,0.2)')
-        )
-        
-        st.plotly_chart(fig_sma, use_container_width=True)
+        st.info("💡 **Tip:** Click legend items to show/hide individual moving averages. EMA lines are solid, SMA lines are dashed.")
         
         # 2. BOLLINGER BANDS
         st.subheader("📊 Bollinger Bands (20, 2)")
         
         fig_bb = go.Figure()
-        
-        fig_bb.add_trace(go.Scatter(
-            x=x_data, y=df_plot['BB_upper'],
-            name='Upper Band',
-            line=dict(color='#FF5722', width=1, dash='dash'),
-            mode='lines',
-            visible=True
-        ))
-        
-        fig_bb.add_trace(go.Scatter(
-            x=x_data, y=df_plot['BB_middle'],
-            name='Middle Band (SMA 20)',
-            line=dict(color='#2196F3', width=1.5),
-            mode='lines',
-            fill='tonexty',
-            fillcolor='rgba(255, 87, 34, 0.1)',
-            visible=True
-        ))
-        
-        fig_bb.add_trace(go.Scatter(
-            x=x_data, y=df_plot['BB_lower'],
-            name='Lower Band',
-            line=dict(color='#4CAF50', width=1, dash='dash'),
-            mode='lines',
-            fill='tonexty',
-            fillcolor='rgba(76, 175, 80, 0.1)',
-            visible=True
-        ))
         
         fig_bb.add_trace(go.Scatter(
             x=x_data, y=df_plot['close'],
@@ -840,9 +755,9 @@ with tab2:
         ))
         
         # Supertrend line with color based on direction
-        # Buy signal (green) - continuous segments
         if 'ST_direction' in df_plot.columns:
-            for i in range(len(df_plot)):
+            i = 0
+            while i < len(df_plot):
                 if pd.notna(df_plot['ST_direction'].iloc[i]) and df_plot['ST_direction'].iloc[i] == 1:
                     # Find continuous green segment
                     start_idx = i
@@ -875,6 +790,8 @@ with tab2:
                         mode='lines',
                         showlegend=(start_idx == 0)
                     ))
+                else:
+                    i += 1
         
         fig_st.update_layout(
             title="Supertrend Indicator",
@@ -895,7 +812,7 @@ with tab2:
         
         st.plotly_chart(fig_st, use_container_width=True)
         
-        # 4. RSI - NO GAPS, CLEAN LABELS
+        # 4. RSI
         st.subheader("📊 RSI (Relative Strength Index)")
         
         fig_rsi = go.Figure()
@@ -940,7 +857,7 @@ with tab2:
         
         st.plotly_chart(fig_rsi, use_container_width=True)
         
-        # 5. MACD - NO GAPS, CLEAN LABELS
+        # 5. MACD
         st.subheader("📈 MACD (Moving Average Convergence Divergence)")
         
         fig_macd = go.Figure()
@@ -1304,4 +1221,32 @@ st.caption("🔴 LIVE Dashboard powered by Zerodha Kite Connect WebSocket API")
 st.caption("📊 **Technical Indicators:** EMA (9, 21, 50) | SMA (20, 50, 200) | Bollinger Bands (20, 2) | Supertrend (10, 3) | RSI | MACD")
 st.caption("⏰ **Market Hours:** 9:15 AM - 3:30 PM IST (Mon-Fri)")
 st.caption("⚠ **Disclaimer:** For educational purposes only. Not financial advice. Trade at your own risk.")
-st.caption(f"📅 Last updated: {datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S IST')}")
+st.caption(f"📅 Last updated: {datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S IST')}")trace(go.Scatter(
+            x=x_data, y=df_plot['BB_upper'],
+            name='Upper Band',
+            line=dict(color='#FF5722', width=1, dash='dash'),
+            mode='lines',
+            visible=True
+        ))
+        
+        fig_bb.add_trace(go.Scatter(
+            x=x_data, y=df_plot['BB_middle'],
+            name='Middle Band (SMA 20)',
+            line=dict(color='#2196F3', width=1.5),
+            mode='lines',
+            fill='tonexty',
+            fillcolor='rgba(255, 87, 34, 0.1)',
+            visible=True
+        ))
+        
+        fig_bb.add_trace(go.Scatter(
+            x=x_data, y=df_plot['BB_lower'],
+            name='Lower Band',
+            line=dict(color='#4CAF50', width=1, dash='dash'),
+            mode='lines',
+            fill='tonexty',
+            fillcolor='rgba(76, 175, 80, 0.1)',
+            visible=True
+        ))
+        
+        fig_bb.add_

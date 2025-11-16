@@ -1,5 +1,6 @@
-streamlit==1.29.0
-kiteconnect==4.3.0
-pandas==2.1.4
-plotly==5.18.0
-feedparser==6.0.10
+streamlit>=1.28.0
+kiteconnect>=4.3.0
+pandas>=2.0.0
+plotly>=5.0.0
+feedparser>=6.0.0
+rich<14,>=10.14.0

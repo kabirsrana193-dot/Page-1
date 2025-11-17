@@ -786,15 +786,11 @@ with tab1:
                     
                     row = {
                         'CE OI': ce_row['oi'].values[0] if not ce_row.empty else 0,
-                        'CE OI Chg': ce_row['oi_change'].values[0] if not ce_row.empty else 0,
-                        'CE OI Chg%': ce_row['oi_change_pct'].values[0] if not ce_row.empty else 0,
                         'CE Vol': ce_row['volume'].values[0] if not ce_row.empty else 0,
                         'CE LTP': ce_row['ltp'].values[0] if not ce_row.empty else 0,
                         'Strike': strike,
                         'PE LTP': pe_row['ltp'].values[0] if not pe_row.empty else 0,
                         'PE Vol': pe_row['volume'].values[0] if not pe_row.empty else 0,
-                        'PE OI Chg%': pe_row['oi_change_pct'].values[0] if not pe_row.empty else 0,
-                        'PE OI Chg': pe_row['oi_change'].values[0] if not pe_row.empty else 0,
                         'PE OI': pe_row['oi'].values[0] if not pe_row.empty else 0,
                     }
                     chain_data.append(row)
@@ -817,17 +813,13 @@ with tab1:
                 
                 styled_df = chain_df.style.apply(highlight_atm_row, axis=1).format({
                     'CE OI': '{:,.0f}',
-                    'CE OI Chg': '{:+,.0f}',
-                    'CE OI Chg%': '{:+.1f}%',
                     'CE Vol': '{:,.0f}',
                     'CE LTP': '₹{:.2f}',
                     'Strike': '₹{:.0f}',
                     'PE LTP': '₹{:.2f}',
                     'PE Vol': '{:,.0f}',
-                    'PE OI Chg%': '{:+.1f}%',
-                    'PE OI Chg': '{:+,.0f}',
                     'PE OI': '{:,.0f}'
-                }).applymap(color_oi_change, subset=['CE OI Chg%', 'PE OI Chg%'])
+                })
                 
                 st.dataframe(
                     styled_df,

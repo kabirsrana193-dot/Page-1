@@ -25,7 +25,7 @@ st.set_page_config(
 # Configuration
 # --------------------------
 API_KEY = "aj0gv6rpjm11ecac"
-ACCESS_TOKEN = "SmCnbRkg9WhWv7FnF3cXpjEGBJkWqihw"
+ACCESS_TOKEN = "Xm8xsdCJZCREksR68JTnk5JWMXWtWnUG"
 
 # Indian market hours
 MARKET_OPEN_TIME = "09:15"

@@ -622,37 +622,54 @@ with tab1:
     with col2:
         today = datetime.now(IST).date()
         
-        # Calculate next Tuesday (weekly expiry) - Tuesday is 1
-        days_ahead = 1 - today.weekday()
-        if days_ahead <= 0:
-            days_ahead += 7
-        next_expiry = today + timedelta(days=days_ahead)
-        
-        # Calculate monthly expiry (last Tuesday of current month)
-        # Get last day of current month
-        if today.month == 12:
-            last_day = today.replace(day=31)
-        else:
-            next_month = today.replace(month=today.month + 1, day=1)
-            last_day = next_month - timedelta(days=1)
-        
-        # Find last Tuesday
-        days_to_subtract = (last_day.weekday() - 1) % 7
-        monthly_expiry = last_day - timedelta(days=days_to_subtract)
-        
-        # Generate expiry list
+        # Calculate monthly expiries (last Tuesday of each month)
         expiries = []
-        for i in range(5):
-            expiry = next_expiry + timedelta(weeks=i)
-            expiries.append(expiry.strftime("%Y-%m-%d"))
         
-        # Add monthly expiry if not already in list
-        monthly_str = monthly_expiry.strftime("%Y-%m-%d")
-        if monthly_str not in expiries:
-            expiries.append(monthly_str)
+        # Function to get last Tuesday of a given month
+        def get_last_tuesday(year, month):
+            # Get last day of month
+            if month == 12:
+                last_day = datetime(year, month, 31).date()
+            else:
+                next_month = datetime(year, month + 1, 1).date()
+                last_day = next_month - timedelta(days=1)
+            
+            # Find last Tuesday (Tuesday = 1 in weekday)
+            days_to_subtract = (last_day.weekday() - 1) % 7
+            last_tuesday = last_day - timedelta(days=days_to_subtract)
+            return last_tuesday
         
-        # Sort expiries
-        expiries = sorted(list(set(expiries)))
+        # Get next 6 monthly expiries
+        current_year = today.year
+        current_month = today.month
+        
+        for i in range(6):
+            month = current_month + i
+            year = current_year
+            
+            # Handle year overflow
+            if month > 12:
+                month = month - 12
+                year += 1
+            
+            expiry = get_last_tuesday(year, month)
+            
+            # Only add future expiries
+            if expiry >= today:
+                expiries.append(expiry.strftime("%Y-%m-%d"))
+        
+        # Make sure we have at least 6 expiries
+        if len(expiries) < 6:
+            for i in range(6, 12):
+                month = current_month + i
+                year = current_year
+                if month > 12:
+                    month = month - 12
+                    year += 1
+                expiry = get_last_tuesday(year, month)
+                expiries.append(expiry.strftime("%Y-%m-%d"))
+                if len(expiries) >= 6:
+                    break
         
         selected_expiry = st.selectbox(
             "Expiry Date",

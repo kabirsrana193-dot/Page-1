@@ -673,7 +673,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["⚡ Options Chain", "💹 Charts & Indicators
 # TAB 1: OPTIONS CHAIN
 with tab1:
     st.header("⚡ Options Chain Analysis")
-    st.caption("📊 Real-time Call & Put Options Data | Market Hours: 9:15 AM - 3:30 PM IST")
+    st.caption("📊 Real-time Call & Put Options Data with IV | Market Hours: 9:15 AM - 3:30 PM IST")
     
     col1, col2, col3 = st.columns(3)
     
@@ -778,7 +778,7 @@ with tab1:
                 st.markdown("---")
                 st.subheader(f"Options Chain - {selected_stock_oc}")
                 
-                # Build proper options chain format
+                # Build proper options chain format with IV
                 chain_data = []
                 for strike in filtered_strikes:
                     ce_row = ce_data[ce_data['strike'] == strike]
@@ -787,9 +787,11 @@ with tab1:
                     row = {
                         'CE OI': ce_row['oi'].values[0] if not ce_row.empty else 0,
                         'CE Vol': ce_row['volume'].values[0] if not ce_row.empty else 0,
+                        'CE IV': ce_row['iv'].values[0] if not ce_row.empty else 0,
                         'CE LTP': ce_row['ltp'].values[0] if not ce_row.empty else 0,
                         'Strike': strike,
                         'PE LTP': pe_row['ltp'].values[0] if not pe_row.empty else 0,
+                        'PE IV': pe_row['iv'].values[0] if not pe_row.empty else 0,
                         'PE Vol': pe_row['volume'].values[0] if not pe_row.empty else 0,
                         'PE OI': pe_row['oi'].values[0] if not pe_row.empty else 0,
                     }
@@ -797,26 +799,31 @@ with tab1:
                 
                 chain_df = pd.DataFrame(chain_data)
                 
-                # Style the dataframe with proper ATM highlighting
-                def highlight_atm_row(row):
+                # Style the dataframe with proper ATM highlighting and strike column in white
+                def highlight_options_chain(row):
+                    styles = [''] * len(row)
+                    
+                    # Highlight ATM row in faint yellow
                     if row['Strike'] == atm_strike:
-                        # Light blue background that keeps text visible
-                        return ['background-color: #E3F2FD; font-weight: bold; color: #000000'] * len(row)
-                    return [''] * len(row)
+                        styles = ['background-color: #FFFACD; font-weight: bold; color: #000000'] * len(row)
+                    
+                    # Strike column always white background
+                    strike_idx = row.index.get_loc('Strike')
+                    if row['Strike'] == atm_strike:
+                        styles[strike_idx] = 'background-color: #FFFFFF; font-weight: bold; color: #000000; border-left: 2px solid #999; border-right: 2px solid #999;'
+                    else:
+                        styles[strike_idx] = 'background-color: #FFFFFF; color: #000000; border-left: 2px solid #999; border-right: 2px solid #999;'
+                    
+                    return styles
                 
-                def color_oi_change(val):
-                    """Color OI change percentage"""
-                    if pd.isna(val) or val == 0:
-                        return ''
-                    color = '#90EE90' if val > 0 else '#FFB6C1'
-                    return f'background-color: {color}; color: #000000'
-                
-                styled_df = chain_df.style.apply(highlight_atm_row, axis=1).format({
+                styled_df = chain_df.style.apply(highlight_options_chain, axis=1).format({
                     'CE OI': '{:,.0f}',
                     'CE Vol': '{:,.0f}',
+                    'CE IV': '{:.1f}%',
                     'CE LTP': '₹{:.2f}',
                     'Strike': '₹{:.0f}',
                     'PE LTP': '₹{:.2f}',
+                    'PE IV': '{:.1f}%',
                     'PE Vol': '{:,.0f}',
                     'PE OI': '{:,.0f}'
                 })
@@ -827,7 +834,7 @@ with tab1:
                     height=600
                 )
                 
-                st.caption("💡 **ATM Strike** highlighted in light blue | Green = OI Increase | Red = OI Decrease")
+                st.caption("💡 **ATM Strike** highlighted in faint yellow | **Strike Price** column in white | **IV** = Implied Volatility (approximate)")
                 
                 # OI Chart
                 st.markdown("---")
@@ -862,6 +869,43 @@ with tab1:
                     barmode='group'
                 )
                 st.plotly_chart(fig_oi, use_container_width=True)
+                
+                # IV Chart
+                st.markdown("---")
+                st.subheader("📈 Implied Volatility (IV) Smile")
+                
+                fig_iv = go.Figure()
+                fig_iv.add_trace(go.Scatter(
+                    x=chain_df['Strike'],
+                    y=chain_df['CE IV'],
+                    name='CALL IV',
+                    mode='lines+markers',
+                    line=dict(color='#ef5350', width=2),
+                    marker=dict(size=8)
+                ))
+                fig_iv.add_trace(go.Scatter(
+                    x=chain_df['Strike'],
+                    y=chain_df['PE IV'],
+                    name='PUT IV',
+                    mode='lines+markers',
+                    line=dict(color='#26a69a', width=2),
+                    marker=dict(size=8)
+                ))
+                fig_iv.add_vline(
+                    x=spot_price,
+                    line_dash="dash",
+                    line_color="blue",
+                    annotation_text=f"Spot: ₹{spot_price:.2f}"
+                )
+                fig_iv.update_layout(
+                    title="Implied Volatility Smile",
+                    xaxis_title="Strike (₹)",
+                    yaxis_title="IV (%)",
+                    height=400,
+                    hovermode='x unified'
+                )
+                st.plotly_chart(fig_iv, use_container_width=True)
+                st.caption("💡 IV typically higher for OTM options | Higher IV = Higher option premiums")
                 
             else:
                 st.warning(f"❌ No options data for {selected_stock_oc} on {selected_expiry}")

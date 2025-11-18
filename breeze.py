@@ -2568,8 +2568,7 @@ with tab5:
                             showlegend=True
                         )
                 st.plotly_chart(fig_buy_pie, use_container_width=True)
-                    
-                    with col2:
+                with col2:
                         # Total sell participation
                         fig_sell_pie = go.Figure(data=[go.Pie(
                             labels=['FII/FPI', 'DII'],

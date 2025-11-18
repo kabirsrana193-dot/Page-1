@@ -7,6 +7,8 @@ import time
 import threading
 import pytz
 import yfinance as yf
+import requests
+from bs4 import BeautifulSoup
 
 # Page config
 st.set_page_config(
@@ -291,32 +293,68 @@ def get_spot_price(symbol):
     except Exception as e:
         return None
 
-def calculate_iv_approximation(option_price, spot_price, strike, time_to_expiry, option_type='CE'):
+def get_option_iv_from_google(symbol, strike, expiry_date, option_type='CE'):
     """
-    Approximate IV using a simplified method
-    This is a rough approximation - for accurate IV, use proper Black-Scholes solver
+    Get actual IV from Google Finance or NSE
+    This is a placeholder - actual implementation would require proper API access
     """
     try:
-        if time_to_expiry <= 0 or option_price <= 0:
-            return 0
-        
-        # Intrinsic value
-        if option_type == 'CE':
-            intrinsic = max(0, spot_price - strike)
-        else:  # PE
-            intrinsic = max(0, strike - spot_price)
-        
-        # Time value
-        time_value = max(0, option_price - intrinsic)
-        
-        # Rough IV approximation (simplified)
-        # IV ≈ (Time Value / Spot Price) * sqrt(365 / days_to_expiry) * 100
-        if spot_price > 0 and time_to_expiry > 0:
-            iv = (time_value / spot_price) * (365 / time_to_expiry) ** 0.5 * 100
-            return min(max(iv, 0), 200)  # Cap between 0-200%
+        # For now, return 0 as placeholder
+        # In production, you would scrape from NSE or use proper options data API
         return 0
     except:
         return 0
+
+def fetch_fii_dii_data():
+    """
+    Fetch FII/DII data from NSE or other sources
+    """
+    try:
+        # NSE FII/DII data URL
+        url = "https://www.nseindia.com/api/fiidiiTradeReact"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
+        
+        session = requests.Session()
+        # First request to get cookies
+        session.get("https://www.nseindia.com", headers=headers, timeout=10)
+        
+        # Second request to get actual data
+        response = session.get(url, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        return None
+    except Exception as e:
+        print(f"Error fetching FII/DII data: {e}")
+        return None
+
+def parse_fii_dii_data(data):
+    """Parse FII/DII JSON data into dataframe"""
+    try:
+        if not data:
+            return None
+        
+        # Extract relevant data
+        fii_dii_records = []
+        
+        # Parse the data structure
+        for entry in data:
+            if isinstance(entry, dict):
+                fii_dii_records.append(entry)
+        
+        if fii_dii_records:
+            df = pd.DataFrame(fii_dii_records)
+            return df
+        return None
+    except Exception as e:
+        print(f"Error parsing FII/DII data: {e}")
+        return None
 
 def get_options_chain(symbol, expiry_date):
     """Fetch options chain with IV calculation"""
@@ -386,17 +424,9 @@ def get_options_chain(symbol, expiry_date):
             lambda x: all_quotes.get(f"NFO:{x}", {}).get('oi', 0)
         )
         
-        # Calculate IV for each option
-        options_data['iv'] = options_data.apply(
-            lambda row: calculate_iv_approximation(
-                row['ltp'],
-                spot_price,
-                row['strike'],
-                time_to_expiry,
-                row['instrument_type']
-            ),
-            axis=1
-        )
+        # Calculate IV for each option (using placeholder for now)
+        # Note: For actual IV, you need proper options data provider
+        options_data['iv'] = 0  # Placeholder - actual IV would come from NSE/Google Finance
         
         return options_data
         
@@ -818,7 +848,7 @@ with col2:
 st.markdown("---")
 
 # Main tabs
-tab1, tab2, tab3, tab4 = st.tabs(["⚡ Options Chain", "💹 Charts & Indicators", "🔴 LIVE Monitor", "📊 Portfolio"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["⚡ Options Chain", "💹 Charts & Indicators", "🔴 LIVE Monitor", "📊 Portfolio", "💰 FII/DII Data"])
 
 # TAB 1: OPTIONS CHAIN
 with tab1:
@@ -969,11 +999,11 @@ with tab1:
                 styled_df = chain_df.style.apply(highlight_options_chain, axis=1).format({
                     'CE OI': '{:,.0f}',
                     'CE Vol': '{:,.0f}',
-                    'CE IV': '{:.1f}%',
+                    'CE IV': 'N/A',  # Placeholder until proper IV source
                     'CE LTP': '₹{:.2f}',
                     'Strike': '₹{:.0f}',
                     'PE LTP': '₹{:.2f}',
-                    'PE IV': '{:.1f}%',
+                    'PE IV': 'N/A',  # Placeholder until proper IV source
                     'PE Vol': '{:,.0f}',
                     'PE OI': '{:,.0f}'
                 })
@@ -984,7 +1014,7 @@ with tab1:
                     height=600
                 )
                 
-                st.caption("💡 **ATM Strike** highlighted in faint yellow | **Strike Price** column in white | **IV** = Implied Volatility (approximate)")
+                st.caption("💡 **ATM Strike** highlighted in faint yellow | **Strike Price** column in white | **IV** = Implied Volatility (requires proper data source)")
                 
                 # OI Chart
                 st.markdown("---")
@@ -1020,42 +1050,7 @@ with tab1:
                 )
                 st.plotly_chart(fig_oi, use_container_width=True)
                 
-                # IV Chart
-                st.markdown("---")
-                st.subheader("📈 Implied Volatility (IV) Smile")
-                
-                fig_iv = go.Figure()
-                fig_iv.add_trace(go.Scatter(
-                    x=chain_df['Strike'],
-                    y=chain_df['CE IV'],
-                    name='CALL IV',
-                    mode='lines+markers',
-                    line=dict(color='#ef5350', width=2),
-                    marker=dict(size=8)
-                ))
-                fig_iv.add_trace(go.Scatter(
-                    x=chain_df['Strike'],
-                    y=chain_df['PE IV'],
-                    name='PUT IV',
-                    mode='lines+markers',
-                    line=dict(color='#26a69a', width=2),
-                    marker=dict(size=8)
-                ))
-                fig_iv.add_vline(
-                    x=spot_price,
-                    line_dash="dash",
-                    line_color="blue",
-                    annotation_text=f"Spot: ₹{spot_price:.2f}"
-                )
-                fig_iv.update_layout(
-                    title="Implied Volatility Smile",
-                    xaxis_title="Strike (₹)",
-                    yaxis_title="IV (%)",
-                    height=400,
-                    hovermode='x unified'
-                )
-                st.plotly_chart(fig_iv, use_container_width=True)
-                st.caption("💡 IV typically higher for OTM options | Higher IV = Higher option premiums")
+                # Remove IV Chart section since IV data is not available
                 
             else:
                 st.warning(f"❌ No options data for {selected_stock_oc} on {selected_expiry}")
@@ -1079,18 +1074,33 @@ with tab2:
         days = days_map[period]
     
     with col3:
-        interval = st.selectbox(
-            "Interval",
-            ["day", "60minute", "30minute", "15minute", "5minute"],
-            format_func=lambda x: {
-                "day": "Daily", 
-                "60minute": "60 Min", 
-                "30minute": "30 Min", 
-                "15minute": "15 Min",
-                "5minute": "5 Min"
-            }[x],
-            key="chart_interval"
-        )
+        # Auto-select interval based on period
+        if period == "1 Day":
+            default_intervals = ["5minute", "15minute", "30minute", "60minute"]
+            interval = st.selectbox(
+                "Interval",
+                default_intervals,
+                format_func=lambda x: {
+                    "60minute": "60 Min", 
+                    "30minute": "30 Min", 
+                    "15minute": "15 Min",
+                    "5minute": "5 Min"
+                }[x],
+                key="chart_interval"
+            )
+        else:
+            interval = st.selectbox(
+                "Interval",
+                ["day", "60minute", "30minute", "15minute", "5minute"],
+                format_func=lambda x: {
+                    "day": "Daily", 
+                    "60minute": "60 Min", 
+                    "30minute": "30 Min", 
+                    "15minute": "15 Min",
+                    "5minute": "5 Min"
+                }[x],
+                key="chart_interval"
+            )
     
     with col4:
         chart_type = st.selectbox(
@@ -1275,12 +1285,74 @@ with tab2:
                 ),
                 yaxis=dict(
                     showgrid=True,
-                    gridcolor='rgba(128,128,128,0.2)'
+                    gridcolor='rgba(128,128,128,0.2)',
+                    autorange=True  # Auto-scale y-axis
                 )
             )
             
             st.plotly_chart(fig_candle, use_container_width=True)
             st.info("💡 **Tip:** EMA lines (solid) react faster to price changes than SMA lines (dashed)")
+        
+        # Add Intraday Price Movement Chart
+        if interval != "day":
+            st.markdown("---")
+            st.subheader(f"📊 {selected_stock} - Intraday Price Movement")
+            
+            fig_intraday = go.Figure()
+            
+            # Calculate proper y-axis range
+            price_min = df['close'].min()
+            price_max = df['close'].max()
+            price_range = price_max - price_min
+            y_padding = max(price_range * 0.05, price_min * 0.002)  # 5% of range or 0.2% of price
+            
+            fig_intraday.add_trace(go.Scatter(
+                x=x_data,
+                y=df_plot['close'],
+                mode='lines',
+                name='Close Price',
+                line=dict(color='#2196F3', width=2),
+                fill='tozeroy',
+                fillcolor='rgba(33, 150, 243, 0.1)'
+            ))
+            
+            fig_intraday.update_layout(
+                title=f"{selected_stock} - Intraday Price Trend",
+                yaxis_title="Price (₹)",
+                xaxis_title="Time (IST)",
+                height=400,
+                hovermode='x unified',
+                xaxis=dict(
+                    type=xaxis_type,
+                    tickformat=tickformat,
+                    tickangle=-45,
+                    nticks=15,
+                    showgrid=True,
+                    gridcolor='rgba(128,128,128,0.2)'
+                ),
+                yaxis=dict(
+                    range=[price_min - y_padding, price_max + y_padding],
+                    showgrid=True,
+                    gridcolor='rgba(128,128,128,0.2)'
+                )
+            )
+            
+            st.plotly_chart(fig_intraday, use_container_width=True)
+            
+            # Show intraday stats
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                intraday_high = df['high'].max()
+                st.metric("Intraday High", f"₹{intraday_high:.2f}")
+            with col2:
+                intraday_low = df['low'].min()
+                st.metric("Intraday Low", f"₹{intraday_low:.2f}")
+            with col3:
+                intraday_range = intraday_high - intraday_low
+                st.metric("Day Range", f"₹{intraday_range:.2f}")
+            with col4:
+                avg_volume = df['volume'].mean()
+                st.metric("Avg Volume", f"{avg_volume:,.0f}")
         
         elif chart_type == "Ichimoku Cloud":
             st.subheader(f"☁️ {selected_stock} - Ichimoku Cloud")
@@ -1914,7 +1986,7 @@ with tab3:
             
             # Show intraday chart for selected stock
             st.markdown("---")
-            st.subheader("📈 Intraday Chart")
+            st.subheader("📈 Intraday Chart (Live)")
             
             selected_for_chart = st.selectbox(
                 "Select stock for chart:",
@@ -1930,6 +2002,12 @@ with tab3:
                         # Create intraday chart with proper y-axis scaling
                         fig_intraday = go.Figure()
                         
+                        # Calculate proper y-axis range
+                        y_min = intraday_df['Close'].min()
+                        y_max = intraday_df['Close'].max()
+                        y_range = y_max - y_min
+                        y_padding = max(y_range * 0.05, y_min * 0.002)  # 5% of range or 0.2% of price
+                        
                         fig_intraday.add_trace(go.Scatter(
                             x=intraday_df.index,
                             y=intraday_df['Close'],
@@ -1940,14 +2018,8 @@ with tab3:
                             fillcolor='rgba(33, 150, 243, 0.1)'
                         ))
                         
-                        # Calculate proper y-axis range with padding
-                        y_min = intraday_df['Close'].min()
-                        y_max = intraday_df['Close'].max()
-                        y_range = y_max - y_min
-                        y_padding = y_range * 0.1  # 10% padding
-                        
                         fig_intraday.update_layout(
-                            title=f"{selected_for_chart} - Intraday Price Movement",
+                            title=f"{selected_for_chart} - Live Intraday Price Movement",
                             xaxis_title="Time (IST)",
                             yaxis_title="Price (₹)",
                             height=400,
@@ -2031,6 +2103,89 @@ with tab4:
         
     except Exception as e:
         st.error(f"❌ Error: {e}")
+
+# TAB 5: FII/DII DATA
+with tab5:
+    st.header("💰 FII/DII Data - Daily Activity")
+    st.caption("📊 Foreign & Domestic Institutional Investors Activity | Data from NSE")
+    
+    col1, col2 = st.columns([3, 1])
+    
+    with col2:
+        if st.button("🔄 Refresh Data", key="refresh_fii_dii"):
+            st.cache_data.clear()
+            st.rerun()
+    
+    with st.spinner("Fetching FII/DII data from NSE..."):
+        fii_dii_data = fetch_fii_dii_data()
+        
+        if fii_dii_data:
+            st.success("✅ Data loaded successfully")
+            
+            # Display the data
+            try:
+                # Create sample data structure (actual structure depends on NSE API response)
+                st.subheader("📈 Latest FII/DII Activity")
+                
+                # Placeholder for actual data display
+                st.info("💡 **Note:** FII/DII data fetching requires proper NSE API access and handling. The data structure varies.")
+                st.info("📌 **Typical Data Includes:** Date, FII Buy Value, FII Sell Value, FII Net Value, DII Buy Value, DII Sell Value, DII Net Value")
+                
+                # Example display (you'll need to adjust based on actual API response)
+                st.json(fii_dii_data)
+                
+                # You can add charts here once data structure is known
+                st.markdown("---")
+                st.subheader("📊 Visualizations")
+                
+                st.info("Charts will be added once FII/DII data structure is properly parsed")
+                
+                # Example of what charts could look like:
+                # fig_fii = go.Figure()
+                # fig_fii.add_trace(go.Bar(name='FII Net', x=dates, y=fii_net_values))
+                # fig_fii.add_trace(go.Bar(name='DII Net', x=dates, y=dii_net_values))
+                # st.plotly_chart(fig_fii, use_container_width=True)
+                
+            except Exception as e:
+                st.error(f"Error parsing data: {e}")
+                st.json(fii_dii_data)
+        else:
+            st.warning("❌ Unable to fetch FII/DII data from NSE")
+            st.info("💡 **Possible reasons:**")
+            st.markdown("""
+            - NSE API requires proper headers and cookies
+            - Rate limiting or access restrictions
+            - API endpoint may have changed
+            - Network connectivity issues
+            """)
+            
+            st.markdown("---")
+            st.subheader("📋 Alternative Data Sources")
+            st.markdown("""
+            You can manually check FII/DII data from:
+            - [NSE India Official Website](https://www.nseindia.com/reports-indices-historical-index-data)
+            - [MoneyControl FII/DII Activity](https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php)
+            - [Economic Times Markets Data](https://economictimes.indiatimes.com/markets/stocks/fii-dii-data)
+            """)
+            
+            # Show sample data structure
+            st.markdown("---")
+            st.subheader("📊 Sample FII/DII Data Structure")
+            
+            sample_data = {
+                'date': ['2024-01-15', '2024-01-16', '2024-01-17'],
+                'fii_buy_value': [5000, 5500, 4800],
+                'fii_sell_value': [4500, 5200, 5100],
+                'fii_net_value': [500, 300, -300],
+                'dii_buy_value': [3000, 3200, 3500],
+                'dii_sell_value': [2800, 2900, 3000],
+                'dii_net_value': [200, 300, 500]
+            }
+            
+            sample_df = pd.DataFrame(sample_data)
+            st.dataframe(sample_df, use_container_width=True)
+            
+            st.caption("💡 All values in ₹ Crores")
 
 # Footer
 st.markdown("---")

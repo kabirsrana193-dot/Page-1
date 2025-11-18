@@ -2586,8 +2586,6 @@ with tab5:
                         )
                         
                         st.plotly_chart(fig_sell_pie, use_container_width=True)
-                    
-                    # Insights
                     st.markdown("---")
                     st.subheader("💡 Market Insights")
                     

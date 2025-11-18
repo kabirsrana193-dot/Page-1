@@ -2567,8 +2567,7 @@ with tab5:
                             height=350,
                             showlegend=True
                         )
-                        
-                        st.plotly_chart(fig_buy_pie, use_container_width=True)
+                st.plotly_chart(fig_buy_pie, use_container_width=True)
                     
                     with col2:
                         # Total sell participation

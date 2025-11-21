@@ -2106,6 +2106,7 @@ with tab4:
         st.error(f"❌ Error: {e}")
 
 # TAB 5: FII/DII DATA
+# TAB 5: FII/DII DATA
 with tab5:
     st.header("💰 FII/DII Data - Daily Activity")
     st.caption("📊 Foreign & Domestic Institutional Investors Activity | Data from NSE")
@@ -2118,48 +2119,21 @@ with tab5:
             st.rerun()
     
     with st.spinner("Fetching FII/DII data from NSE..."):
-        fii_dii_data = fetch_fii_dii_data()
+        # Use the new fetch function with fallback
+        fii_dii_raw = get_fii_dii_with_fallback()
         
-        if fii_dii_data:
+        if fii_dii_raw:
             st.success("✅ Data loaded successfully")
             
-            # Display the data
-            try:
-                # Parse all categories
-                data_dict = {}
-                current_date = None
-                
-                for entry in fii_dii_data:
-                    category = entry.get('category', '')
-                    if not current_date:
-                        current_date = entry.get('date', 'N/A')
-                    
-                    # Store data by category
-                    if 'FII' in category or 'FPI' in category:
-                        investor_type = 'FII'
-                    elif 'DII' in category:
-                        investor_type = 'DII'
-                    else:
-                        continue
-                    
-                    # Determine market segment
-                    if 'Index Futures' in category:
-                        segment = 'Index Futures'
-                    elif 'Index Options' in category:
-                        segment = 'Index Options'
-                    elif 'Stock Futures' in category:
-                        segment = 'Stock Futures'
-                    elif 'Stock Options' in category:
-                        segment = 'Stock Options'
-                    else:
-                        segment = 'Cash/Equity'
-                    
-                    key = f"{investor_type}_{segment}"
-                    data_dict[key] = {
-                        'buy': float(entry.get('buyValue', 0)),
-                        'sell': float(entry.get('sellValue', 0)),
-                        'net': float(entry.get('netValue', 0))
-                    }
+            # Parse the data
+            data_dict = parse_fii_dii_data(fii_dii_raw)
+            
+            if data_dict and len(data_dict) > 0:
+                # Try to get current date from data
+                try:
+                    current_date = list(data_dict.values())[0].get('date', 'N/A')
+                except:
+                    current_date = datetime.now(IST).strftime('%d-%b-%Y')
                 
                 # Display date
                 st.subheader(f"📅 Data as of: {current_date}")
@@ -2295,6 +2269,8 @@ with tab5:
                             st.info("🔵 **Mixed Signal:** FII buying, DII selling - Foreign confidence")
                         elif fii_total_net < 0 and dii_total_net > 0:
                             st.warning("🟡 **Mixed Signal:** DII buying, FII selling - Local support")
+                        else:
+                            st.info("⚪ **Neutral:** No clear directional bias")
                     
                     with col2:
                         if abs(fii_total_net) > abs(dii_total_net):
@@ -2497,29 +2473,28 @@ with tab5:
                 with segment_tabs[4]:
                     create_segment_tab("Stock Futures", "FII_Stock Futures", "DII_Stock Futures")
                 
-            except Exception as e:
-                st.error(f"Error parsing data: {e}")
-                st.json(fii_dii_data)
+            else:
+                st.warning("❌ Unable to parse FII/DII data")
+                st.info("💡 The data format may have changed. Try refreshing or check back later.")
                    
         else:
             st.warning("❌ Unable to fetch FII/DII data from NSE")
             st.info("💡 **Possible reasons:**")
             st.markdown("""
-            - NSE API requires proper headers and cookies
+            - NSE API is temporarily unavailable
             - Rate limiting or access restrictions
-            - API endpoint may have changed
             - Network connectivity issues
+            - NSE servers are under maintenance
             """)
             
             st.markdown("---")
             st.subheader("📋 Alternative Data Sources")
             st.markdown("""
             You can manually check FII/DII data from:
-            - [NSE India Official Website](https://www.nseindia.com/reports-indices-historical-index-data)
+            - [NSE India Official Website](https://www.nseindia.com/)
             - [MoneyControl FII/DII Activity](https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php)
             - [Economic Times Markets Data](https://economictimes.indiatimes.com/markets/stocks/fii-dii-data)
             """)
-
 # Footer
 st.markdown("---")
 st.caption("🔴 Dashboard powered by Zerodha Kite Connect API & Yahoo Finance")

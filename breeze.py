@@ -309,184 +309,53 @@ def get_option_iv_from_google(symbol, strike, expiry_date, option_type='CE'):
 
 def fetch_fii_dii_data():
     """
-    Fetch FII/DII data from NSE - USES TWO SOURCES:
-    1. Cash/Equity data from fiidiiTradeReact API
-    2. Derivatives data (Futures/Options) from participant-wise OI CSV file
+    Fetch FII/DII data from NSE or other sources
     """
     try:
-        final_data = {}
-        
-        # SOURCE 1: Get Cash/Equity data from fiidiiTradeReact API
-        url_cash = "https://www.nseindia.com/api/fiidiiTradeReact"
+        # NSE FII/DII data URL
+        url = "https://www.nseindia.com/api/fiidiiTradeReact"
         
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Accept': 'application/json',
-            'Referer': 'https://www.nseindia.com/'
+            'Accept-Language': 'en-US,en;q=0.9',
         }
         
         session = requests.Session()
-        session.get("https://www.nseindia.com/", headers=headers, timeout=10)
-        time.sleep(0.5)
+        # First request to get cookies
+        session.get("https://www.nseindia.com", headers=headers, timeout=10)
         
-        response_cash = session.get(url_cash, headers=headers, timeout=15)
-        if response_cash.status_code == 200:
-            cash_data = response_cash.json()
-            final_data['cash'] = cash_data
+        # Second request to get actual data
+        response = session.get(url, headers=headers, timeout=10)
         
-        # SOURCE 2: Get Derivatives data from participant-wise OI CSV
-        # Try today's date first, then yesterday
-        from datetime import datetime, timedelta
-        import pytz
-        
-        IST = pytz.timezone('Asia/Kolkata')
-        today = datetime.now(IST)
-        
-        # Try today and yesterday
-        for days_back in range(0, 5):  # Try last 5 days
-            date_to_try = today - timedelta(days=days_back)
-            date_str = date_to_try.strftime('%d%m%Y')
-            
-            csv_url = f"https://archives.nseindia.com/content/nsccl/fao_participant_oi_{date_str}.csv"
-            
-            try:
-                response_csv = session.get(csv_url, headers=headers, timeout=15)
-                if response_csv.status_code == 200:
-                    # Successfully got CSV data
-                    import io
-                    csv_content = response_csv.text
-                    final_data['derivatives'] = csv_content
-                    final_data['derivatives_date'] = date_to_try.strftime('%d-%b-%Y')
-                    break
-            except:
-                continue
-        
-        return final_data if final_data else None
-        
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        return None
     except Exception as e:
         print(f"Error fetching FII/DII data: {e}")
         return None
 
-
 def parse_fii_dii_data(data):
-    """
-    Parse FII/DII data from BOTH sources:
-    1. Cash/Equity from fiidiiTradeReact
-    2. Derivatives from participant-wise OI CSV
-    """
+    """Parse FII/DII JSON data into dataframe"""
     try:
         if not data:
             return None
         
-        parsed_data = {}
-        date_str = ''
+        # Extract relevant data
+        fii_dii_records = []
         
-        # PART 1: Parse Cash/Equity data
-        if 'cash' in data and isinstance(data['cash'], list):
-            for entry in data['cash']:
-                if not isinstance(entry, dict):
-                    continue
-                
-                category = entry.get('category', '').strip()
-                date_str = entry.get('date', '')
-                
-                # Determine investor type
-                if 'FII' in category.upper() or 'FPI' in category.upper():
-                    investor_type = 'FII'
-                elif 'DII' in category.upper():
-                    investor_type = 'DII'
-                else:
-                    continue
-                
-                # Extract values
-                try:
-                    buy_val = float(str(entry.get('buyValue', 0)).replace(',', ''))
-                    sell_val = float(str(entry.get('sellValue', 0)).replace(',', ''))
-                    net_val = float(str(entry.get('netValue', 0)).replace(',', ''))
-                except:
-                    buy_val = sell_val = net_val = 0.0
-                
-                key = f"{investor_type}_Cash/Equity"
-                parsed_data[key] = {
-                    'buy': buy_val,
-                    'sell': sell_val,
-                    'net': net_val,
-                    'date': date_str
-                }
+        # Parse the data structure
+        for entry in data:
+            if isinstance(entry, dict):
+                fii_dii_records.append(entry)
         
-        # PART 2: Parse Derivatives data from CSV
-        if 'derivatives' in data:
-            import io
-            import csv
-            
-            csv_content = data['derivatives']
-            csv_reader = csv.DictReader(io.StringIO(csv_content))
-            
-            deriv_date = data.get('derivatives_date', date_str)
-            
-            for row in csv_reader:
-                client_type = row.get('Client Type', '').strip()
-                
-                if client_type in ['FII', 'DII']:
-                    # Extract values (in contracts, we'll estimate values)
-                    # Convert contracts to approximate crore values (rough estimate)
-                    
-                    # INDEX FUTURES
-                    idx_fut_long = float(row.get('Future Index Long', 0))
-                    idx_fut_short = float(row.get('Future Index Short', 0))
-                    idx_fut_net = idx_fut_long - idx_fut_short
-                    
-                    # Approximate: 1 Nifty contract ≈ ₹15 lakh, so divide by 6.67 to get crores
-                    idx_fut_net_cr = idx_fut_net * 0.15  # contracts to crores
-                    
-                    key = f"{client_type}_Index Futures"
-                    parsed_data[key] = {
-                        'buy': abs(idx_fut_net_cr) if idx_fut_net > 0 else 0,
-                        'sell': abs(idx_fut_net_cr) if idx_fut_net < 0 else 0,
-                        'net': idx_fut_net_cr,
-                        'date': deriv_date
-                    }
-                    
-                    # STOCK FUTURES
-                    stk_fut_long = float(row.get('Future Stock Long', 0))
-                    stk_fut_short = float(row.get('Future Stock Short ', 0))  # Note: extra space in CSV
-                    stk_fut_net = stk_fut_long - stk_fut_short
-                    
-                    # Approximate: 1 stock future ≈ ₹5 lakh, so multiply by 0.05
-                    stk_fut_net_cr = stk_fut_net * 0.05
-                    
-                    key = f"{client_type}_Stock Futures"
-                    parsed_data[key] = {
-                        'buy': abs(stk_fut_net_cr) if stk_fut_net > 0 else 0,
-                        'sell': abs(stk_fut_net_cr) if stk_fut_net < 0 else 0,
-                        'net': stk_fut_net_cr,
-                        'date': deriv_date
-                    }
-                    
-                    # INDEX OPTIONS
-                    idx_call_long = float(row.get('Option Index Call Long', 0))
-                    idx_call_short = float(row.get('Option Index Call Short', 0))
-                    idx_put_long = float(row.get('Option Index Put Long', 0))
-                    idx_put_short = float(row.get('Option Index Put Short', 0))
-                    
-                    # Net position: Long positions are buys, Short positions are sells
-                    idx_opt_net = (idx_call_long + idx_put_long) - (idx_call_short + idx_put_short)
-                    idx_opt_net_cr = idx_opt_net * 0.02  # Options worth less per contract
-                    
-                    key = f"{client_type}_Index Options"
-                    parsed_data[key] = {
-                        'buy': abs(idx_opt_net_cr) if idx_opt_net > 0 else 0,
-                        'sell': abs(idx_opt_net_cr) if idx_opt_net < 0 else 0,
-                        'net': idx_opt_net_cr,
-                        'date': deriv_date
-                    }
-        
-        return parsed_data if parsed_data else None
-        
+        if fii_dii_records:
+            df = pd.DataFrame(fii_dii_records)
+            return df
+        return None
     except Exception as e:
         print(f"Error parsing FII/DII data: {e}")
-        import traceback
-        traceback.print_exc()
         return None
 
 

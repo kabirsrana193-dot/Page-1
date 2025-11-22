@@ -368,7 +368,7 @@ def get_fii_dii_with_fallback():
     
     if raw_data:
         parsed = parse_fii_dii_data(raw_data)
-        if parsed and len(parsed) > 0:
+        if parsed is not None and not parsed.empty:  # FIXED
             return parsed
     
     # Fallback with retry
@@ -417,7 +417,7 @@ def get_fii_dii_with_fallback():
         
         if final_data:
             parsed = parse_fii_dii_data(final_data)
-            if parsed and len(parsed) > 0:
+            if parsed is not None and not parsed.empty:  # FIXED
                 return parsed
                 
     except Exception as e:

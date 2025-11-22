@@ -2175,7 +2175,8 @@ with tab4:
     except Exception as e:
         st.error(f"❌ Error: {e}")
 
-# TAB 5: FII/DII DATA
+# Replace the entire TAB 5 section (starting from "with tab5:") with this fixed version:
+
 # TAB 5: FII/DII DATA
 with tab5:
     st.header("💰 FII/DII Data - Daily Activity")
@@ -2192,7 +2193,8 @@ with tab5:
         # Use the new fetch function with fallback
         fii_dii_raw = get_fii_dii_with_fallback()
         
-        if fii_dii_raw:
+        # FIX: Check if data exists properly
+        if fii_dii_raw is not None and (isinstance(fii_dii_raw, pd.DataFrame) and not fii_dii_raw.empty) or (isinstance(fii_dii_raw, dict) and len(fii_dii_raw) > 0):
             st.success("✅ Data loaded successfully")
             
             # Parse the data

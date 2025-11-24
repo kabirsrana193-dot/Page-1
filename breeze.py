@@ -305,345 +305,56 @@ def get_option_iv_from_google(symbol, strike, expiry_date, option_type='CE'):
     except:
         return 0
 
-
-
-def get_fii_dii_from_vahan():
-    """Fetch from Vahan API (most reliable)"""
+def fetch_fii_dii_data():
+    """
+    Fetch FII/DII data from NSE or other sources
+    """
     try:
-        url = "https://vahanapi.vahan.co.in/fii"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json'
-        }
-        
-        response = requests.get(url, headers=headers, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-    except Exception as e:
-        print(f"Vahan API error: {e}")
-    
-    return None
-
-def get_fii_dii_from_tickertape():
-    """Fetch from TickerTape (reliable source)"""
-    try:
-        url = "https://www.tickertape.in/api/mdata/fii-dii"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-        
-        response = requests.get(url, headers=headers, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            return data
-    except Exception as e:
-        print(f"TickerTape API error: {e}")
-    
-    return None
-
-def get_fii_dii_from_moneycontrol():
-    """Fetch FII/DII data from MoneyControl"""
-    try:
-        url = "https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php"
+        # NSE FII/DII data URL
+        url = "https://www.nseindia.com/api/fiidiiTradeReact"
         
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Referer': 'https://www.moneycontrol.com'
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9',
         }
         
         session = requests.Session()
-        response = session.get(url, headers=headers, timeout=10)
-        response.encoding = 'utf-8'
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        
-        # Find all tables
-        tables = soup.find_all('table')
-        
-        data = {
-            'equity': {},
-            'index_futures': {},
-            'index_options': {},
-            'equity_futures': {},
-            'equity_options': {}
-        }
-        
-        for table in tables:
-            rows = table.find_all('tr')
-            
-            for row in rows:
-                cells = row.find_all(['td', 'th'])
-                if len(cells) >= 2:
-                    # Get text from cells
-                    label_text = cells[0].get_text(strip=True).lower()
-                    
-                    # Try to extract values from different cell positions
-                    for i, cell in enumerate(cells[1:], 1):
-                        cell_text = cell.get_text(strip=True)
-                        
-                        if 'equity' in label_text and 'future' not in label_text and 'option' not in label_text:
-                            if 'buy' in label_text or (i == 1):
-                                data['equity']['buy'] = cell_text
-                            elif 'sell' in label_text or (i == 2):
-                                data['equity']['sell'] = cell_text
-                            elif 'net' in label_text or (i == 3):
-                                data['equity']['net'] = cell_text
-                        
-                        elif 'index' in label_text and 'future' in label_text:
-                            if 'buy' in label_text or (i == 1):
-                                data['index_futures']['buy'] = cell_text
-                            elif 'sell' in label_text or (i == 2):
-                                data['index_futures']['sell'] = cell_text
-                            elif 'net' in label_text or (i == 3):
-                                data['index_futures']['net'] = cell_text
-                        
-                        elif 'index' in label_text and 'option' in label_text:
-                            if 'buy' in label_text or (i == 1):
-                                data['index_options']['buy'] = cell_text
-                            elif 'sell' in label_text or (i == 2):
-                                data['index_options']['sell'] = cell_text
-                            elif 'net' in label_text or (i == 3):
-                                data['index_options']['net'] = cell_text
-                        
-                        elif 'stock' in label_text and 'future' in label_text:
-                            if 'buy' in label_text or (i == 1):
-                                data['equity_futures']['buy'] = cell_text
-                            elif 'sell' in label_text or (i == 2):
-                                data['equity_futures']['sell'] = cell_text
-                            elif 'net' in label_text or (i == 3):
-                                data['equity_futures']['net'] = cell_text
-                        
-                        elif 'stock' in label_text and 'option' in label_text:
-                            if 'buy' in label_text or (i == 1):
-                                data['equity_options']['buy'] = cell_text
-                            elif 'sell' in label_text or (i == 2):
-                                data['equity_options']['sell'] = cell_text
-                            elif 'net' in label_text or (i == 3):
-                                data['equity_options']['net'] = cell_text
-        
-        return data if any(data.values()) else None
-        
-    except Exception as e:
-        print(f"MoneyControl scraping error: {e}")
-        return None
-
-def get_fii_dii_from_nseindia():
-    """Fetch FII/DII data directly from NSE"""
-    try:
-        url = "https://www.nseindia.com/live_market/dynaContent/live_analysis/fii_dii.json"
-        
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-            'Referer': 'https://www.nseindia.com/live_market/dynaContent/live_analysis/fii_dii.htm'
-        }
-        
-        # First, get the NSE page to establish session
-        session = requests.Session()
+        # First request to get cookies
         session.get("https://www.nseindia.com", headers=headers, timeout=10)
         
-        # Now fetch the actual data
+        # Second request to get actual data
         response = session.get(url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
             return data
+        return None
     except Exception as e:
-        print(f"NSE direct fetch error: {e}")
-    
-    return None
+        print(f"Error fetching FII/DII data: {e}")
+        return None
 
-def parse_value(value_str):
-    """Convert value strings like '5000.50 Cr' to float"""
+def parse_fii_dii_data(data):
+    """Parse FII/DII JSON data into dataframe"""
     try:
-        if not value_str or value_str == '-' or value_str == 'N/A':
-            return 0.0
+        if not data:
+            return None
         
-        value_str = str(value_str).strip()
+        # Extract relevant data
+        fii_dii_records = []
         
-        # Remove commas and spaces
-        value_str = value_str.replace(',', '').replace(' ', '')
+        # Parse the data structure
+        for entry in data:
+            if isinstance(entry, dict):
+                fii_dii_records.append(entry)
         
-        # Extract number
-        match = re.search(r'[-+]?\d*\.?\d+', value_str)
-        if match:
-            value = float(match.group())
-            
-            # Check for Cr (Crore) or L (Lakh)
-            if 'Cr' in value_str or 'cr' in value_str:
-                return value
-            elif 'L' in value_str or 'l' in value_str:
-                return value / 100
-            
-            return value
-        return 0.0
-    except:
-        return 0.0
-
-def get_fii_dii_comprehensive():
-    """Get FII/DII data for all segments with fallback sources"""
-    
-    segments_data = {
-        'Equity': {'fii_buy': 0, 'fii_sell': 0, 'fii_net': 0, 'dii_buy': 0, 'dii_sell': 0, 'dii_net': 0},
-        'Index Futures': {'fii_buy': 0, 'fii_sell': 0, 'fii_net': 0, 'dii_buy': 0, 'dii_sell': 0, 'dii_net': 0},
-        'Index Options': {'fii_buy': 0, 'fii_sell': 0, 'fii_net': 0, 'dii_buy': 0, 'dii_sell': 0, 'dii_net': 0},
-        'Equity Futures': {'fii_buy': 0, 'fii_sell': 0, 'fii_net': 0, 'dii_buy': 0, 'dii_sell': 0, 'dii_net': 0},
-        'Equity Options': {'fii_buy': 0, 'fii_sell': 0, 'fii_net': 0, 'dii_buy': 0, 'dii_sell': 0, 'dii_net': 0}
-    }
-    
-    # Try NSE first (most official)
-    nse_data = get_fii_dii_from_nseindia()
-    if nse_data:
-        try:
-            # Parse NSE JSON format
-            for entry in nse_data:
-                category = entry.get('category', '').lower()
-                
-                if 'equity' in category and 'future' not in category and 'option' not in category:
-                    segments_data['Equity']['fii_buy'] = parse_value(entry.get('FIIBuyValue', 0))
-                    segments_data['Equity']['fii_sell'] = parse_value(entry.get('FIISellValue', 0))
-                    segments_data['Equity']['fii_net'] = parse_value(entry.get('FIINetValue', 0))
-                    segments_data['Equity']['dii_buy'] = parse_value(entry.get('DIIBuyValue', 0))
-                    segments_data['Equity']['dii_sell'] = parse_value(entry.get('DIISellValue', 0))
-                    segments_data['Equity']['dii_net'] = parse_value(entry.get('DIINetValue', 0))
-                
-                elif 'index' in category and 'future' in category:
-                    segments_data['Index Futures']['fii_buy'] = parse_value(entry.get('FIIBuyValue', 0))
-                    segments_data['Index Futures']['fii_sell'] = parse_value(entry.get('FIISellValue', 0))
-                    segments_data['Index Futures']['fii_net'] = parse_value(entry.get('FIINetValue', 0))
-                    segments_data['Index Futures']['dii_buy'] = parse_value(entry.get('DIIBuyValue', 0))
-                    segments_data['Index Futures']['dii_sell'] = parse_value(entry.get('DIISellValue', 0))
-                    segments_data['Index Futures']['dii_net'] = parse_value(entry.get('DIINetValue', 0))
-                
-                elif 'index' in category and 'option' in category:
-                    segments_data['Index Options']['fii_buy'] = parse_value(entry.get('FIIBuyValue', 0))
-                    segments_data['Index Options']['fii_sell'] = parse_value(entry.get('FIISellValue', 0))
-                    segments_data['Index Options']['fii_net'] = parse_value(entry.get('FIINetValue', 0))
-                    segments_data['Index Options']['dii_buy'] = parse_value(entry.get('DIIBuyValue', 0))
-                    segments_data['Index Options']['dii_sell'] = parse_value(entry.get('DIISellValue', 0))
-                    segments_data['Index Options']['dii_net'] = parse_value(entry.get('DIINetValue', 0))
-                
-                elif 'stock' in category and 'future' in category:
-                    segments_data['Equity Futures']['fii_buy'] = parse_value(entry.get('FIIBuyValue', 0))
-                    segments_data['Equity Futures']['fii_sell'] = parse_value(entry.get('FIISellValue', 0))
-                    segments_data['Equity Futures']['fii_net'] = parse_value(entry.get('FIINetValue', 0))
-                    segments_data['Equity Futures']['dii_buy'] = parse_value(entry.get('DIIBuyValue', 0))
-                    segments_data['Equity Futures']['dii_sell'] = parse_value(entry.get('DIISellValue', 0))
-                    segments_data['Equity Futures']['dii_net'] = parse_value(entry.get('DIINetValue', 0))
-                
-                elif 'stock' in category and 'option' in category:
-                    segments_data['Equity Options']['fii_buy'] = parse_value(entry.get('FIIBuyValue', 0))
-                    segments_data['Equity Options']['fii_sell'] = parse_value(entry.get('FIISellValue', 0))
-                    segments_data['Equity Options']['fii_net'] = parse_value(entry.get('FIINetValue', 0))
-                    segments_data['Equity Options']['dii_buy'] = parse_value(entry.get('DIIBuyValue', 0))
-                    segments_data['Equity Options']['dii_sell'] = parse_value(entry.get('DIISellValue', 0))
-                    segments_data['Equity Options']['dii_net'] = parse_value(entry.get('DIINetValue', 0))
-            
-            if any(v['fii_net'] != 0 for v in segments_data.values()):
-                return segments_data
-        except Exception as e:
-            print(f"NSE data parsing error: {e}")
-    
-    # Fallback to Vahan API
-    vahan_data = get_fii_dii_from_vahan()
-    if vahan_data:
-        try:
-            # Parse Vahan format
-            for segment_key, segment_name in [
-                ('equity', 'Equity'),
-                ('index_futures', 'Index Futures'),
-                ('index_options', 'Index Options'),
-                ('equity_futures', 'Equity Futures'),
-                ('equity_options', 'Equity Options')
-            ]:
-                if segment_key in vahan_data:
-                    seg_data = vahan_data[segment_key]
-                    segments_data[segment_name]['fii_buy'] = parse_value(seg_data.get('fii_buy', 0))
-                    segments_data[segment_name]['fii_sell'] = parse_value(seg_data.get('fii_sell', 0))
-                    segments_data[segment_name]['fii_net'] = parse_value(seg_data.get('fii_net', 0))
-                    segments_data[segment_name]['dii_buy'] = parse_value(seg_data.get('dii_buy', 0))
-                    segments_data[segment_name]['dii_sell'] = parse_value(seg_data.get('dii_sell', 0))
-                    segments_data[segment_name]['dii_net'] = parse_value(seg_data.get('dii_net', 0))
-            
-            if any(v['fii_net'] != 0 for v in segments_data.values()):
-                return segments_data
-        except Exception as e:
-            print(f"Vahan data parsing error: {e}")
-    
-    # Fallback to TickerTape
-    tickertape_data = get_fii_dii_from_tickertape()
-    if tickertape_data:
-        try:
-            # Parse TickerTape format
-            if isinstance(tickertape_data, dict):
-                for segment_key, segment_name in [
-                    ('equity', 'Equity'),
-                    ('indexFutures', 'Index Futures'),
-                    ('indexOptions', 'Index Options'),
-                    ('stockFutures', 'Equity Futures'),
-                    ('stockOptions', 'Equity Options')
-                ]:
-                    if segment_key in tickertape_data:
-                        seg_data = tickertape_data[segment_key]
-                        segments_data[segment_name]['fii_buy'] = parse_value(seg_data.get('fii_buy', 0))
-                        segments_data[segment_name]['fii_sell'] = parse_value(seg_data.get('fii_sell', 0))
-                        segments_data[segment_name]['fii_net'] = parse_value(seg_data.get('fii_net', 0))
-                        segments_data[segment_name]['dii_buy'] = parse_value(seg_data.get('dii_buy', 0))
-                        segments_data[segment_name]['dii_sell'] = parse_value(seg_data.get('dii_sell', 0))
-                        segments_data[segment_name]['dii_net'] = parse_value(seg_data.get('dii_net', 0))
-            
-            if any(v['fii_net'] != 0 for v in segments_data.values()):
-                return segments_data
-        except Exception as e:
-            print(f"TickerTape data parsing error: {e}")
-    
-    # Last resort: MoneyControl scraping
-    mc_data = get_fii_dii_from_moneycontrol()
-    if mc_data:
-        try:
-            # Parse MoneyControl data
-            if mc_data.get('equity'):
-                segments_data['Equity']['fii_buy'] = parse_value(mc_data['equity'].get('buy', 0))
-                segments_data['Equity']['fii_sell'] = parse_value(mc_data['equity'].get('sell', 0))
-                segments_data['Equity']['fii_net'] = parse_value(mc_data['equity'].get('net', 0))
-            
-            if mc_data.get('index_futures'):
-                segments_data['Index Futures']['fii_buy'] = parse_value(mc_data['index_futures'].get('buy', 0))
-                segments_data['Index Futures']['fii_sell'] = parse_value(mc_data['index_futures'].get('sell', 0))
-                segments_data['Index Futures']['fii_net'] = parse_value(mc_data['index_futures'].get('net', 0))
-            
-            if mc_data.get('index_options'):
-                segments_data['Index Options']['fii_buy'] = parse_value(mc_data['index_options'].get('buy', 0))
-                segments_data['Index Options']['fii_sell'] = parse_value(mc_data['index_options'].get('sell', 0))
-                segments_data['Index Options']['fii_net'] = parse_value(mc_data['index_options'].get('net', 0))
-            
-            if mc_data.get('equity_futures'):
-                segments_data['Equity Futures']['fii_buy'] = parse_value(mc_data['equity_futures'].get('buy', 0))
-                segments_data['Equity Futures']['fii_sell'] = parse_value(mc_data['equity_futures'].get('sell', 0))
-                segments_data['Equity Futures']['fii_net'] = parse_value(mc_data['equity_futures'].get('net', 0))
-            
-            if mc_data.get('equity_options'):
-                segments_data['Equity Options']['fii_buy'] = parse_value(mc_data['equity_options'].get('buy', 0))
-                segments_data['Equity Options']['fii_sell'] = parse_value(mc_data['equity_options'].get('sell', 0))
-                segments_data['Equity Options']['fii_net'] = parse_value(mc_data['equity_options'].get('net', 0))
-            
-            if any(v['fii_net'] != 0 for v in segments_data.values()):
-                return segments_data
-        except Exception as e:
-            print(f"MoneyControl data parsing error: {e}")
-    
-    # If all sources fail, return empty data
-    print("All FII/DII data sources failed")
-    return segments_data
-
-# Add this cache decorator before the function
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def get_fii_dii_cached():
-    """Cached version of get_fii_dii_comprehensive"""
-    return get_fii_dii_comprehensive()
+        if fii_dii_records:
+            df = pd.DataFrame(fii_dii_records)
+            return df
+        return None
+    except Exception as e:
+        print(f"Error parsing FII/DII data: {e}")
+        return None
 
 def get_options_chain(symbol, expiry_date):
     """Fetch options chain with IV calculation"""
@@ -2394,564 +2105,294 @@ with tab4:
         st.error(f"❌ Error: {e}")
 
 # TAB 5: FII/DII DATA
-# TAB 5: FII/DII DATA - Complete Tab Code
-# Replace the entire "with tab5:" section with this code
-
 with tab5:
-    st.header("💰 FII/DII Data - All Segments")
-    st.caption("📊 Foreign & Domestic Institutional Investors Activity across All Market Segments | Real-time Data")
+    st.header("💰 FII/DII Data - Daily Activity")
+    st.caption("📊 Foreign & Domestic Institutional Investors Activity | Data from NSE")
     
-    col1, col2, col3 = st.columns([2, 1, 1])
+    col1, col2 = st.columns([3, 1])
     
     with col2:
         if st.button("🔄 Refresh Data", key="refresh_fii_dii"):
             st.cache_data.clear()
             st.rerun()
     
-    with col3:
-        investor_type = st.selectbox(
-            "Investor Type",
-            ["Both (FII+DII)", "FII Only", "DII Only"],
-            key="investor_type"
-        )
-    
-    with st.spinner("Fetching FII/DII data for all segments..."):
-        fii_dii_all = get_fii_dii_cached()
+    with st.spinner("Fetching FII/DII data from NSE..."):
+        fii_dii_data = fetch_fii_dii_data()
         
-        if fii_dii_all and any(fii_dii_all.values()):
+        if fii_dii_data:
             st.success("✅ Data loaded successfully")
             
-            # Create tabs for each segment
-            seg_tabs = st.tabs([
-                "📊 Equity",
-                "📈 Index Futures",
-                "📉 Index Options",
-                "💹 Equity Futures",
-                "🎯 Equity Options"
-            ])
-            
-            segments = ['Equity', 'Index Futures', 'Index Options', 'Equity Futures', 'Equity Options']
-            
-            for seg_tab, segment_name in zip(seg_tabs, segments):
-                with seg_tab:
-                    segment_data = fii_dii_all.get(segment_name, {})
+            # Display the data
+            try:
+                # Parse the data
+                fii_entry = None
+                dii_entry = None
+                
+                for entry in fii_dii_data:
+                    if 'FII' in entry.get('category', ''):
+                        fii_entry = entry
+                    elif 'DII' in entry.get('category', ''):
+                        dii_entry = entry
+                
+                if fii_entry and dii_entry:
+                    # Display date
+                    st.subheader(f"📅 Data as of: {fii_entry.get('date', 'N/A')}")
                     
-                    if segment_data and (segment_data.get('fii_net', 0) != 0 or segment_data.get('dii_net', 0) != 0):
+                    # Display summary cards
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        fii_net = float(fii_entry.get('netValue', 0))
+                        fii_color = "🟢" if fii_net >= 0 else "🔴"
+                        st.markdown(f"### {fii_color} FII/FPI")
+                        st.metric(
+                            "Net Value",
+                            f"₹{abs(fii_net):,.2f} Cr",
+                            delta=f"{'Inflow' if fii_net >= 0 else 'Outflow'}",
+                            delta_color="normal" if fii_net >= 0 else "inverse"
+                        )
+                        st.caption(f"Buy: ₹{float(fii_entry.get('buyValue', 0)):,.2f} Cr")
+                        st.caption(f"Sell: ₹{float(fii_entry.get('sellValue', 0)):,.2f} Cr")
+                    
+                    with col2:
+                        dii_net = float(dii_entry.get('netValue', 0))
+                        dii_color = "🟢" if dii_net >= 0 else "🔴"
+                        st.markdown(f"### {dii_color} DII")
+                        st.metric(
+                            "Net Value",
+                            f"₹{abs(dii_net):,.2f} Cr",
+                            delta=f"{'Inflow' if dii_net >= 0 else 'Outflow'}",
+                            delta_color="normal" if dii_net >= 0 else "inverse"
+                        )
+                        st.caption(f"Buy: ₹{float(dii_entry.get('buyValue', 0)):,.2f} Cr")
+                        st.caption(f"Sell: ₹{float(dii_entry.get('sellValue', 0)):,.2f} Cr")
+                    
+                    with col3:
+                        total_net = fii_net + dii_net
+                        total_color = "🟢" if total_net >= 0 else "🔴"
+                        st.markdown(f"### {total_color} Total (FII+DII)")
+                        st.metric(
+                            "Combined Net",
+                            f"₹{abs(total_net):,.2f} Cr",
+                            delta=f"{'Net Buy' if total_net >= 0 else 'Net Sell'}",
+                            delta_color="normal" if total_net >= 0 else "inverse"
+                        )
+                        total_buy = float(fii_entry.get('buyValue', 0)) + float(dii_entry.get('buyValue', 0))
+                        total_sell = float(fii_entry.get('sellValue', 0)) + float(dii_entry.get('sellValue', 0))
+                        st.caption(f"Buy: ₹{total_buy:,.2f} Cr")
+                        st.caption(f"Sell: ₹{total_sell:,.2f} Cr")
+                    
+                    st.markdown("---")
+                    
+                    # Detailed data table
+                    st.subheader("📋 Detailed Breakdown")
+                    
+                    detail_data = {
+                        'Category': ['FII/FPI', 'DII'],
+                        'Buy Value (₹ Cr)': [
+                            float(fii_entry.get('buyValue', 0)),
+                            float(dii_entry.get('buyValue', 0))
+                        ],
+                        'Sell Value (₹ Cr)': [
+                            float(fii_entry.get('sellValue', 0)),
+                            float(dii_entry.get('sellValue', 0))
+                        ],
+                        'Net Value (₹ Cr)': [fii_net, dii_net]
+                    }
+                    
+                    detail_df = pd.DataFrame(detail_data)
+                    
+                    # Style the dataframe
+                    def highlight_net(row):
+                        if row['Net Value (₹ Cr)'] > 0:
+                            return [''] * 3 + ['background-color: #90EE90; color: #000000']
+                        elif row['Net Value (₹ Cr)'] < 0:
+                            return [''] * 3 + ['background-color: #FFB6C1; color: #000000']
+                        return [''] * 4
+                    
+                    styled_detail = detail_df.style.apply(highlight_net, axis=1).format({
+                        'Buy Value (₹ Cr)': '{:,.2f}',
+                        'Sell Value (₹ Cr)': '{:,.2f}',
+                        'Net Value (₹ Cr)': '{:,.2f}'
+                    })
+                    
+                    st.dataframe(styled_detail, use_container_width=True, height=150)
+                    
+                    # Visualizations
+                    st.markdown("---")
+                    st.subheader("📊 Visualizations")
+                    
+                    # 1. Net Value Comparison
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        fig_net = go.Figure()
                         
-                        fii_buy = segment_data.get('fii_buy', 0)
-                        fii_sell = segment_data.get('fii_sell', 0)
-                        fii_net = segment_data.get('fii_net', 0)
+                        colors = ['#26a69a' if val >= 0 else '#ef5350' for val in [fii_net, dii_net]]
                         
-                        dii_buy = segment_data.get('dii_buy', 0)
-                        dii_sell = segment_data.get('dii_sell', 0)
-                        dii_net = segment_data.get('dii_net', 0)
+                        fig_net.add_trace(go.Bar(
+                            x=['FII/FPI', 'DII'],
+                            y=[fii_net, dii_net],
+                            marker_color=colors,
+                            text=[f'₹{fii_net:,.0f}', f'₹{dii_net:,.0f}'],
+                            textposition='outside',
+                            name='Net Value'
+                        ))
                         
-                        st.subheader(f"🎯 {segment_name} Segment")
+                        fig_net.add_hline(y=0, line_dash="solid", line_color="gray", line_width=1)
                         
-                        # Show both FII and DII or based on selection
-                        if investor_type == "Both (FII+DII)" or investor_type == "FII Only":
-                            st.markdown("### 🌍 Foreign Institutional Investors (FII)")
-                            
-                            col1, col2, col3, col4 = st.columns(4)
-                            
-                            with col1:
-                                st.metric(
-                                    "FII Buy",
-                                    f"₹{abs(fii_buy):,.0f} Cr",
-                                    f"{fii_buy:+,.0f}",
-                                    delta_color="normal"
-                                )
-                            
-                            with col2:
-                                st.metric(
-                                    "FII Sell",
-                                    f"₹{abs(fii_sell):,.0f} Cr",
-                                    f"{fii_sell:+,.0f}",
-                                    delta_color="inverse"
-                                )
-                            
-                            with col3:
-                                net_color = "normal" if fii_net >= 0 else "inverse"
-                                net_arrow = "🟢" if fii_net >= 0 else "🔴"
-                                st.metric(
-                                    f"{net_arrow} FII Net",
-                                    f"₹{abs(fii_net):,.0f} Cr",
-                                    f"{fii_net:+,.0f}",
-                                    delta_color=net_color
-                                )
-                            
-                            with col4:
-                                if fii_sell > 0:
-                                    fii_ratio = fii_buy / fii_sell
-                                    st.metric("FII B/S Ratio", f"{fii_ratio:.2f}x")
-                                else:
-                                    st.metric("FII Volume", f"₹{fii_buy + fii_sell:,.0f} Cr")
-                            
-                            # FII Sentiment
-                            if fii_net > 0:
-                                st.success(f"🟢 **FII NET BUY** - ₹{fii_net:,.0f} Cr inflow")
-                            elif fii_net < 0:
-                                st.error(f"🔴 **FII NET SELL** - ₹{abs(fii_net):,.0f} Cr outflow")
-                            else:
-                                st.info("⚪ **FII NEUTRAL** - Balanced activity")
-                            
-                            st.markdown("---")
+                        fig_net.update_layout(
+                            title="FII vs DII - Net Value",
+                            yaxis_title="Net Value (₹ Crores)",
+                            xaxis_title="Category",
+                            height=400,
+                            showlegend=False
+                        )
                         
-                        if investor_type == "Both (FII+DII)" or investor_type == "DII Only":
-                            st.markdown("### 🏛️ Domestic Institutional Investors (DII)")
-                            
-                            col1, col2, col3, col4 = st.columns(4)
-                            
-                            with col1:
-                                st.metric(
-                                    "DII Buy",
-                                    f"₹{abs(dii_buy):,.0f} Cr",
-                                    f"{dii_buy:+,.0f}",
-                                    delta_color="normal"
-                                )
-                            
-                            with col2:
-                                st.metric(
-                                    "DII Sell",
-                                    f"₹{abs(dii_sell):,.0f} Cr",
-                                    f"{dii_sell:+,.0f}",
-                                    delta_color="inverse"
-                                )
-                            
-                            with col3:
-                                net_color = "normal" if dii_net >= 0 else "inverse"
-                                net_arrow = "🟢" if dii_net >= 0 else "🔴"
-                                st.metric(
-                                    f"{net_arrow} DII Net",
-                                    f"₹{abs(dii_net):,.0f} Cr",
-                                    f"{dii_net:+,.0f}",
-                                    delta_color=net_color
-                                )
-                            
-                            with col4:
-                                if dii_sell > 0:
-                                    dii_ratio = dii_buy / dii_sell
-                                    st.metric("DII B/S Ratio", f"{dii_ratio:.2f}x")
-                                else:
-                                    st.metric("DII Volume", f"₹{dii_buy + dii_sell:,.0f} Cr")
-                            
-                            # DII Sentiment
-                            if dii_net > 0:
-                                st.success(f"🟢 **DII NET BUY** - ₹{dii_net:,.0f} Cr inflow")
-                            elif dii_net < 0:
-                                st.error(f"🔴 **DII NET SELL** - ₹{abs(dii_net):,.0f} Cr outflow")
-                            else:
-                                st.info("⚪ **DII NEUTRAL** - Balanced activity")
-                            
-                            st.markdown("---")
+                        st.plotly_chart(fig_net, use_container_width=True)
+                    
+                    with col2:
+                        # Buy vs Sell comparison
+                        fig_buy_sell = go.Figure()
                         
-                        # Detailed breakdown table
-                        st.markdown("### 📋 Detailed Breakdown")
+                        fig_buy_sell.add_trace(go.Bar(
+                            name='Buy',
+                            x=['FII/FPI', 'DII'],
+                            y=[float(fii_entry.get('buyValue', 0)), float(dii_entry.get('buyValue', 0))],
+                            marker_color='#4CAF50',
+                            text=[f"₹{float(fii_entry.get('buyValue', 0)):,.0f}", f"₹{float(dii_entry.get('buyValue', 0)):,.0f}"],
+                            textposition='outside'
+                        ))
                         
-                        if investor_type == "Both (FII+DII)":
-                            breakdown_df = pd.DataFrame({
-                                'Category': ['FII', 'DII', 'Total'],
-                                'Buy (₹ Cr)': [fii_buy, dii_buy, fii_buy + dii_buy],
-                                'Sell (₹ Cr)': [fii_sell, dii_sell, fii_sell + dii_sell],
-                                'Net (₹ Cr)': [fii_net, dii_net, fii_net + dii_net]
-                            })
-                        elif investor_type == "FII Only":
-                            breakdown_df = pd.DataFrame({
-                                'Category': ['FII'],
-                                'Buy (₹ Cr)': [fii_buy],
-                                'Sell (₹ Cr)': [fii_sell],
-                                'Net (₹ Cr)': [fii_net]
-                            })
+                        fig_buy_sell.add_trace(go.Bar(
+                            name='Sell',
+                            x=['FII/FPI', 'DII'],
+                            y=[float(fii_entry.get('sellValue', 0)), float(dii_entry.get('sellValue', 0))],
+                            marker_color='#ef5350',
+                            text=[f"₹{float(fii_entry.get('sellValue', 0)):,.0f}", f"₹{float(dii_entry.get('sellValue', 0)):,.0f}"],
+                            textposition='outside'
+                        ))
+                        
+                        fig_buy_sell.update_layout(
+                            title="Buy vs Sell Activity",
+                            yaxis_title="Value (₹ Crores)",
+                            xaxis_title="Category",
+                            height=400,
+                            barmode='group'
+                        )
+                        
+                        st.plotly_chart(fig_buy_sell, use_container_width=True)
+                    
+                    # 3. Pie chart - Market participation
+                    st.markdown("---")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Total buy participation
+                        fig_buy_pie = go.Figure(data=[go.Pie(
+                            labels=['FII/FPI', 'DII'],
+                            values=[float(fii_entry.get('buyValue', 0)), float(dii_entry.get('buyValue', 0))],
+                            hole=0.4,
+                            marker_colors=['#2196F3', '#FF9800'],
+                            textinfo='label+percent',
+                            textposition='outside'
+                        )])
+                        
+                        fig_buy_pie.update_layout(
+                            title="Buy Activity Distribution",
+                            height=350,
+                            showlegend=True
+                        )
+                        
+                        st.plotly_chart(fig_buy_pie, use_container_width=True)
+                    
+                    with col2:
+                        # Total sell participation
+                        fig_sell_pie = go.Figure(data=[go.Pie(
+                            labels=['FII/FPI', 'DII'],
+                            values=[float(fii_entry.get('sellValue', 0)), float(dii_entry.get('sellValue', 0))],
+                            hole=0.4,
+                            marker_colors=['#E91E63', '#9C27B0'],
+                            textinfo='label+percent',
+                            textposition='outside'
+                        )])
+                        
+                        fig_sell_pie.update_layout(
+                            title="Sell Activity Distribution",
+                            height=350,
+                            showlegend=True
+                        )
+                        
+                        st.plotly_chart(fig_sell_pie, use_container_width=True)
+                    
+                    # Insights
+                    st.markdown("---")
+                    st.subheader("💡 Market Insights")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        if fii_net > 0 and dii_net > 0:
+                            st.success("🟢 **Bullish Signal:** Both FII and DII are net buyers")
+                        elif fii_net < 0 and dii_net < 0:
+                            st.error("🔴 **Bearish Signal:** Both FII and DII are net sellers")
+                        elif fii_net > 0 and dii_net < 0:
+                            st.info("🔵 **Mixed Signal:** FII buying, DII selling - FII confidence")
+                        elif fii_net < 0 and dii_net > 0:
+                            st.warning("🟡 **Mixed Signal:** DII buying, FII selling - Local support")
+                    
+                    with col2:
+                        if abs(fii_net) > abs(dii_net):
+                            st.info(f"📊 **FII Dominance:** FII activity is stronger (₹{abs(fii_net - dii_net):,.2f} Cr)")
+                        elif abs(dii_net) > abs(fii_net):
+                            st.info(f"📊 **DII Dominance:** DII activity is stronger (₹{abs(dii_net - fii_net):,.2f} Cr)")
                         else:
-                            breakdown_df = pd.DataFrame({
-                                'Category': ['DII'],
-                                'Buy (₹ Cr)': [dii_buy],
-                                'Sell (₹ Cr)': [dii_sell],
-                                'Net (₹ Cr)': [dii_net]
-                            })
-                        
-                        def highlight_breakdown(row):
-                            styles = [''] * len(row.index)
-                            net_idx = row.index.get_loc('Net (₹ Cr)') if 'Net (₹ Cr)' in row.index else len(row) - 1
-                            
-                            if row['Net (₹ Cr)'] > 0:
-                                styles[net_idx] = 'background-color: #90EE90; color: #000000; font-weight: bold'
-                            elif row['Net (₹ Cr)'] < 0:
-                                styles[net_idx] = 'background-color: #FFB6C1; color: #000000; font-weight: bold'
-                            else:
-                                styles[net_idx] = 'background-color: #FFF9C4; color: #000000'
-                            
-                            return styles
-                        
-                        styled_breakdown = breakdown_df.style.apply(highlight_breakdown, axis=1).format({
-                            'Buy (₹ Cr)': '{:,.0f}',
-                            'Sell (₹ Cr)': '{:,.0f}',
-                            'Net (₹ Cr)': '{:,.0f}'
-                        })
-                        
-                        st.dataframe(styled_breakdown, use_container_width=True, height=150)
-                        
-                        # Visualizations
-                        st.markdown("---")
-                        st.markdown("### 📊 Visualizations")
-                        
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            # Buy vs Sell comparison
-                            if investor_type == "Both (FII+DII)":
-                                fig_bar = go.Figure()
-                                
-                                fig_bar.add_trace(go.Bar(
-                                    x=['FII', 'DII'],
-                                    y=[fii_buy, dii_buy],
-                                    marker_color='#4CAF50',
-                                    name='Buy',
-                                    text=[f'₹{fii_buy:,.0f}', f'₹{dii_buy:,.0f}'],
-                                    textposition='outside'
-                                ))
-                                
-                                fig_bar.add_trace(go.Bar(
-                                    x=['FII', 'DII'],
-                                    y=[fii_sell, dii_sell],
-                                    marker_color='#ef5350',
-                                    name='Sell',
-                                    text=[f'₹{fii_sell:,.0f}', f'₹{dii_sell:,.0f}'],
-                                    textposition='outside'
-                                ))
-                                
-                                fig_bar.update_layout(
-                                    title=f"{segment_name} - FII vs DII Activity",
-                                    yaxis_title="Amount (₹ Crores)",
-                                    height=350,
-                                    barmode='group',
-                                    hovermode='x unified'
-                                )
-                            else:
-                                fig_bar = go.Figure()
-                                
-                                investor = 'FII' if investor_type == "FII Only" else 'DII'
-                                buy_val = fii_buy if investor_type == "FII Only" else dii_buy
-                                sell_val = fii_sell if investor_type == "FII Only" else dii_sell
-                                
-                                fig_bar.add_trace(go.Bar(
-                                    x=['Buy', 'Sell'],
-                                    y=[buy_val, sell_val],
-                                    marker_color=['#4CAF50', '#ef5350'],
-                                    text=[f'₹{buy_val:,.0f}', f'₹{sell_val:,.0f}'],
-                                    textposition='outside'
-                                ))
-                                
-                                fig_bar.update_layout(
-                                    title=f"{segment_name} - {investor} Buy vs Sell",
-                                    yaxis_title="Amount (₹ Crores)",
-                                    height=350,
-                                    showlegend=False,
-                                    hovermode='x unified'
-                                )
-                            
-                            st.plotly_chart(fig_bar, use_container_width=True)
-                        
-                        with col2:
-                            # Net value comparison
-                            if investor_type == "Both (FII+DII)":
-                                fig_net = go.Figure()
-                                
-                                colors = ['#26a69a' if val >= 0 else '#ef5350' for val in [fii_net, dii_net]]
-                                
-                                fig_net.add_trace(go.Bar(
-                                    x=['FII', 'DII'],
-                                    y=[fii_net, dii_net],
-                                    marker_color=colors,
-                                    text=[f'₹{fii_net:,.0f}', f'₹{dii_net:,.0f}'],
-                                    textposition='outside'
-                                ))
-                                
-                                fig_net.add_hline(y=0, line_dash="solid", line_color="gray", line_width=2)
-                                
-                                fig_net.update_layout(
-                                    title=f"{segment_name} - Net Inflow/Outflow",
-                                    yaxis_title="Net Amount (₹ Crores)",
-                                    height=350,
-                                    showlegend=False,
-                                    hovermode='x'
-                                )
-                            else:
-                                fig_net = go.Figure()
-                                
-                                investor = 'FII' if investor_type == "FII Only" else 'DII'
-                                net_val = fii_net if investor_type == "FII Only" else dii_net
-                                color = '#26a69a' if net_val >= 0 else '#ef5350'
-                                
-                                fig_net.add_trace(go.Bar(
-                                    x=[investor],
-                                    y=[net_val],
-                                    marker_color=color,
-                                    text=f'₹{net_val:,.0f}',
-                                    textposition='outside'
-                                ))
-                                
-                                fig_net.add_hline(y=0, line_dash="solid", line_color="gray", line_width=2)
-                                
-                                fig_net.update_layout(
-                                    title=f"{segment_name} - {investor} Net Activity",
-                                    yaxis_title="Net Amount (₹ Crores)",
-                                    height=350,
-                                    showlegend=False
-                                )
-                            
-                            st.plotly_chart(fig_net, use_container_width=True)
-                        
-                        # Pie charts
-                        st.markdown("---")
-                        
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            if investor_type == "Both (FII+DII)":
-                                total_buy = fii_buy + dii_buy
-                                fii_buy_pct = (fii_buy / total_buy * 100) if total_buy > 0 else 0
-                                dii_buy_pct = (dii_buy / total_buy * 100) if total_buy > 0 else 0
-                                
-                                fig_pie = go.Figure(data=[go.Pie(
-                                    labels=['FII Buy', 'DII Buy'],
-                                    values=[fii_buy, dii_buy],
-                                    hole=0.4,
-                                    marker_colors=['#2196F3', '#FF9800'],
-                                    textinfo='label+percent',
-                                    textposition='inside'
-                                )])
-                            else:
-                                investor = 'FII' if investor_type == "FII Only" else 'DII'
-                                buy_val = fii_buy if investor_type == "FII Only" else dii_buy
-                                sell_val = fii_sell if investor_type == "FII Only" else dii_sell
-                                
-                                fig_pie = go.Figure(data=[go.Pie(
-                                    labels=['Buy', 'Sell'],
-                                    values=[buy_val, sell_val],
-                                    hole=0.4,
-                                    marker_colors=['#4CAF50', '#ef5350'],
-                                    textinfo='label+percent',
-                                    textposition='inside'
-                                )])
-                            
-                            fig_pie.update_layout(
-                                title="Buy Distribution",
-                                height=350
-                            )
-                            st.plotly_chart(fig_pie, use_container_width=True)
-                        
-                        with col2:
-                            if investor_type == "Both (FII+DII)":
-                                total_sell = fii_sell + dii_sell
-                                fii_sell_pct = (fii_sell / total_sell * 100) if total_sell > 0 else 0
-                                dii_sell_pct = (dii_sell / total_sell * 100) if total_sell > 0 else 0
-                                
-                                fig_pie2 = go.Figure(data=[go.Pie(
-                                    labels=['FII Sell', 'DII Sell'],
-                                    values=[fii_sell, dii_sell],
-                                    hole=0.4,
-                                    marker_colors=['#E91E63', '#9C27B0'],
-                                    textinfo='label+percent',
-                                    textposition='inside'
-                                )])
-                            else:
-                                investor = 'FII' if investor_type == "FII Only" else 'DII'
-                                buy_val = fii_buy if investor_type == "FII Only" else dii_buy
-                                sell_val = fii_sell if investor_type == "FII Only" else dii_sell
-                                
-                                fig_pie2 = go.Figure(data=[go.Pie(
-                                    labels=['Buy', 'Sell'],
-                                    values=[buy_val, sell_val],
-                                    hole=0.4,
-                                    marker_colors=['#4CAF50', '#ef5350'],
-                                    textinfo='label+percent',
-                                    textposition='inside'
-                                )])
-                            
-                            fig_pie2.update_layout(
-                                title="Sell Distribution",
-                                height=350
-                            )
-                            st.plotly_chart(fig_pie2, use_container_width=True)
+                            st.info("⚖️ **Balanced:** FII and DII activity is balanced")
                     
-                    else:
-                        st.info(f"No significant institutional investor activity data for {segment_name}")
-            
-            st.markdown("---")
-            st.subheader("📊 Segment Comparison")
-            
-            # Create comparison dataframe
-            comparison_data = []
-            for seg_name in segments:
-                seg_data = fii_dii_all.get(seg_name, {})
-                
-                if investor_type == "Both (FII+DII)":
-                    total_net = seg_data.get('fii_net', 0) + seg_data.get('dii_net', 0)
-                    comparison_data.append({
-                        'Segment': seg_name,
-                        'FII Buy (₹ Cr)': seg_data.get('fii_buy', 0),
-                        'FII Sell (₹ Cr)': seg_data.get('fii_sell', 0),
-                        'FII Net (₹ Cr)': seg_data.get('fii_net', 0),
-                        'DII Buy (₹ Cr)': seg_data.get('dii_buy', 0),
-                        'DII Sell (₹ Cr)': seg_data.get('dii_sell', 0),
-                        'DII Net (₹ Cr)': seg_data.get('dii_net', 0),
-                        'Total Net (₹ Cr)': total_net
-                    })
-                elif investor_type == "FII Only":
-                    comparison_data.append({
-                        'Segment': seg_name,
-                        'Buy (₹ Cr)': seg_data.get('fii_buy', 0),
-                        'Sell (₹ Cr)': seg_data.get('fii_sell', 0),
-                        'Net (₹ Cr)': seg_data.get('fii_net', 0)
-                    })
                 else:
-                    comparison_data.append({
-                        'Segment': seg_name,
-                        'Buy (₹ Cr)': seg_data.get('dii_buy', 0),
-                        'Sell (₹ Cr)': seg_data.get('dii_sell', 0),
-                        'Net (₹ Cr)': seg_data.get('dii_net', 0)
-                    })
-            
-            if comparison_data:
-                comparison_df = pd.DataFrame(comparison_data)
+                    st.warning("⚠️ Unable to parse FII/DII data structure")
+                    st.json(fii_dii_data)
                 
-                # Visualization
-                fig_compare = go.Figure()
-                
-                if investor_type == "Both (FII+DII)":
-                    fig_compare.add_trace(go.Bar(
-                        name='FII Net',
-                        x=comparison_df['Segment'],
-                        y=comparison_df['FII Net (₹ Cr)'],
-                        marker_color='#2196F3'
-                    ))
-                    
-                    fig_compare.add_trace(go.Bar(
-                        name='DII Net',
-                        x=comparison_df['Segment'],
-                        y=comparison_df['DII Net (₹ Cr)'],
-                        marker_color='#FF9800'
-                    ))
-                    
-                    fig_compare.add_trace(go.Scatter(
-                        name='Total Net',
-                        x=comparison_df['Segment'],
-                        y=comparison_df['Total Net (₹ Cr)'],
-                        yaxis='y2',
-                        mode='lines+markers',
-                        line=dict(color='#4CAF50', width=3),
-                        marker=dict(size=10)
-                    ))
-                else:
-                    investor = 'FII' if investor_type == "FII Only" else 'DII'
-                    
-                    fig_compare.add_trace(go.Bar(
-                        name='Buy',
-                        x=comparison_df['Segment'],
-                        y=comparison_df['Buy (₹ Cr)'],
-                        marker_color='#4CAF50'
-                    ))
-                    
-                    fig_compare.add_trace(go.Bar(
-                        name='Sell',
-                        x=comparison_df['Segment'],
-                        y=comparison_df['Sell (₹ Cr)'],
-                        marker_color='#ef5350'
-                    ))
-                    
-                    fig_compare.add_trace(go.Scatter(
-                        name='Net',
-                        x=comparison_df['Segment'],
-                        y=comparison_df['Net (₹ Cr)'],
-                        yaxis='y2',
-                        mode='lines+markers',
-                        line=dict(color='#2196F3', width=3),
-                        marker=dict(size=10)
-                    ))
-                
-                fig_compare.update_layout(
-                    title=f"Activity Across All Segments - {investor_type}",
-                    barmode='group',
-                    yaxis_title="Amount (₹ Crores)",
-                    yaxis2=dict(
-                        title="Net Amount (₹ Crores)",
-                        overlaying='y',
-                        side='right'
-                    ),
-                    xaxis_title="Market Segment",
-                    height=450,
-                    hovermode='x unified'
-                )
-                
-                st.plotly_chart(fig_compare, use_container_width=True)
-                
-                # Display comparison table
-                st.dataframe(
-                    comparison_df.style.format({col: '{:,.0f}' for col in comparison_df.columns if col != 'Segment'}),
-                    use_container_width=True,
-                    height=300
-                )
-            
-            st.markdown("---")
-            st.subheader("💡 Key Insights & Strategy")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.markdown("**📈 FII Strategy**")
-                st.markdown("""
-                🟢 **Bullish**: Large inflows in equity
-                🔴 **Bearish**: Large outflows
-                💡 **Watch**: Futures & Options activity
-                """)
-            
-            with col2:
-                st.markdown("**🏛️ DII Strategy**")
-                st.markdown("""
-                🟢 **Support**: DII buying cushions falls
-                🔴 **Warning**: DII exits indicate weakness
-                💡 **Monitor**: Mutual fund flows
-                """)
-            
-            with col3:
-                st.markdown("**🎯 Trading Tips**")
-                st.markdown("""
-                📊 **Compare**: FII vs DII divergence
-                📈 **Trends**: Consistent buying pressure
-                ⚡ **Action**: Use in confluence with TA
-                """)
-            
-            st.caption(f"📅 Data refreshed: {datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S IST')}")
-        
+            except Exception as e:
+                st.error(f"Error parsing data: {e}")
+                st.json(fii_dii_data)
         else:
-            st.warning("❌ Unable to fetch FII/DII data")
-            
-            st.info("""
-            💡 **Troubleshooting:**
-            - Data sources may be temporarily unavailable
-            - Try refreshing after a few seconds
-            - Check your internet connection
-            - Data typically updates after market hours
+            st.warning("❌ Unable to fetch FII/DII data from NSE")
+            st.info("💡 **Possible reasons:**")
+            st.markdown("""
+            - NSE API requires proper headers and cookies
+            - Rate limiting or access restrictions
+            - API endpoint may have changed
+            - Network connectivity issues
             """)
             
             st.markdown("---")
-            st.subheader("📋 Manual Data Sources")
+            st.subheader("📋 Alternative Data Sources")
             st.markdown("""
-            You can manually check FII/DII data from these official sources:
-            
-            🔗 **Official NSE Website**
-            - https://www.nseindia.com/live_market/dynaContent/live_analysis/fii_dii.htm
-            
-            🔗 **MoneyControl**
-            - https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php
-            
-            🔗 **Economic Times**
-            - https://economictimes.indiatimes.com/markets/stocks/fii-dii-data
-            
-            🔗 **TickerTape**
-            - https://www.tickertape.in/
+            You can manually check FII/DII data from:
+            - [NSE India Official Website](https://www.nseindia.com/reports-indices-historical-index-data)
+            - [MoneyControl FII/DII Activity](https://www.moneycontrol.com/stocks/marketstats/fii_dii_activity/index.php)
+            - [Economic Times Markets Data](https://economictimes.indiatimes.com/markets/stocks/fii-dii-data)
             """)
+            
+            # Show sample data structure
+            st.markdown("---")
+            st.subheader("📊 Sample FII/DII Data Structure")
+            
+            sample_data = {
+                'date': ['2024-01-15', '2024-01-16', '2024-01-17'],
+                'fii_buy_value': [5000, 5500, 4800],
+                'fii_sell_value': [4500, 5200, 5100],
+                'fii_net_value': [500, 300, -300],
+                'dii_buy_value': [3000, 3200, 3500],
+                'dii_sell_value': [2800, 2900, 3000],
+                'dii_net_value': [200, 300, 500]
+            }
+            
+            sample_df = pd.DataFrame(sample_data)
+            st.dataframe(sample_df, use_container_width=True)
+            
+            st.caption("💡 All values in ₹ Crores")
 
 # Footer
 st.markdown("---")
